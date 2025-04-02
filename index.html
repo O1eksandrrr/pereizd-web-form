@@ -212,39 +212,41 @@
     function openMap(fieldId) {
       activeField = fieldId;
       document.getElementById('mapModal').style.display = 'block';
-
+    
       setTimeout(() => {
         if (!map) {
           map = L.map('map').setView([50.4501, 30.5234], 13);
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
           }).addTo(map);
-
-          map.on('click', function (e) {
-            const lat = e.latlng.lat;
-            const lng = e.latlng.lng;
-
-            if (selectedMarker) {
-              map.removeLayer(selectedMarker);
-            }
-
-            selectedMarker = L.marker([lat, lng]).addTo(map);
-            document.getElementById(fieldId + '_lat').value = lat;
-            document.getElementById(fieldId + '_lng').value = lng;
-
-            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
-              .then(res => res.json())
-              .then(data => {
-                document.getElementById(fieldId).value = data.display_name || `${lat}, ${lng}`;
-              });
-          });
-        } else {
-          map.setView([50.4501, 30.5234], 13);
-          map.invalidateSize();
         }
+    
+        // Очищаємо всі старі click-обробники перед додаванням нового
+        map.off('click');
+        map.on('click', function (e) {
+          const lat = e.latlng.lat;
+          const lng = e.latlng.lng;
+    
+          if (selectedMarker) {
+            map.removeLayer(selectedMarker);
+          }
+    
+          selectedMarker = L.marker([lat, lng]).addTo(map);
+    
+          document.getElementById(activeField + '_lat').value = lat;
+          document.getElementById(activeField + '_lng').value = lng;
+    
+          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+            .then(res => res.json())
+            .then(data => {
+              document.getElementById(activeField).value = data.display_name || `${lat}, ${lng}`;
+            });
+        });
+    
+        map.setView([50.4501, 30.5234], 13);
+        map.invalidateSize();
       }, 200);
     }
-
     function closeMap() {
       document.getElementById('mapModal').style.display = 'none';
     }
