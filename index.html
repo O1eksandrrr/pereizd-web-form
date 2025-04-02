@@ -6,8 +6,12 @@
   <title>Заявка на переїзд</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <style>
-
+    html {
+      scroll-behavior: smooth;
+    }
     html, body {
       height: 100%;
       overflow-y: auto;
@@ -71,35 +75,32 @@
       flex: 1;
     }
   </style>
-    <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 </head>
 <body>
   <h2>🚚 Заявка на переїзд</h2>
   <form id="moveForm">
     <div class="block">
-      <label>🏙️ Місто відправлення</label>
+      <label>🌆 Місто відправлення</label>
       <input type="text" id="city_from" placeholder="Наприклад, Київ" required />
 
-      <label>📍 Адреса відправлення</label>
-        <div style="display: flex; gap: 8px;">
+      <label>📌 Адреса відправлення</label>
+      <div style="display: flex; gap: 8px;">
         <input type="text" id="from" placeholder="вул. Хрещатик, 1" required />
-        <button type="button" onclick="openMap('from')">📍</button>
-        </div>
-        <input type="hidden" id="from_lat" name="from_lat">
-        <input type="hidden" id="from_lng" name="from_lng">
+        <button type="button" onclick="openMap('from')">📌</button>
+      </div>
+      <input type="hidden" id="from_lat" name="from_lat">
+      <input type="hidden" id="from_lng" name="from_lng">
 
-      <label>🏙️ Місто доставки</label>
+      <label>🌆 Місто доставки</label>
       <input type="text" id="city_to" placeholder="Наприклад, Львів" required />
 
-      <label>📍 Адреса доставки</label>
-        <div style="display: flex; gap: 8px;">
+      <label>📌 Адреса доставки</label>
+      <div style="display: flex; gap: 8px;">
         <input type="text" id="to" placeholder="вул. Городоцька, 15" required />
-        <button type="button" onclick="openMap('to')">📍</button>
-        <input type="hidden" id="to_lat" name="to_lat">
-        <input type="hidden" id="to_lng" name="to_lng"> 
+        <button type="button" onclick="openMap('to')">📌</button>
+      </div>
+      <input type="hidden" id="to_lat" name="to_lat">
+      <input type="hidden" id="to_lng" name="to_lng">
     </div>
 
     <div class="block">
@@ -172,6 +173,11 @@
     <button type="submit">✅ Надіслати заявку</button>
   </form>
 
+  <div id="mapModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:1000;">
+    <div id="map" style="height: 90%; width: 100%;"></div>
+    <button onclick="closeMap()" style="width: 100%; padding: 16px; background-color: #007AFF; color: white; border: none;">✅ Обрати точку</button>
+  </div>
+
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
@@ -179,93 +185,70 @@
     const form = document.getElementById("moveForm");
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
-
       const data = {
-        city_from: document.getElementById("city_from").value,
         from: document.getElementById("from").value,
-        city_to: document.getElementById("city_to").value,
         to: document.getElementById("to").value,
-        date: document.getElementById("date").value,
-        time: document.getElementById("time").value,
-        cargo: document.getElementById("cargo").value,
-        weight: document.getElementById("weight").value,
-        length: document.getElementById("length").value,
-        width: document.getElementById("width").value,
-        height: document.getElementById("height").value,
-        vehicle_type: document.getElementById("vehicle_type").value,
-        loaders: document.getElementById("loaders").value,
-        elevator: document.getElementById("elevator").value,
-        phone: document.getElementById("phone").value,
-        comment: document.getElementById("comment").value,
-        telegram_id: tg.initDataUnsafe?.user?.id || null,
-        username: tg.initDataUnsafe?.user?.username || null,
-        full_name: tg.initDataUnsafe?.user?.first_name + ' ' + (tg.initDataUnsafe?.user?.last_name || '')
+        from_lat: document.getElementById("from_lat").value,
+        from_lng: document.getElementById("from_lng").value,
+        to_lat: document.getElementById("to_lat").value,
+        to_lng: document.getElementById("to_lng").value,
       };
-
       try {
         await fetch("https://your-n8n-webhook-url", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data)
         });
-
         tg.close();
       } catch (err) {
         alert("Помилка надсилання! Спробуйте ще раз.");
       }
     });
-      <script>
-        let map;
-        let selectedMarker;
-        let activeField = '';
-        
-        function openMap(fieldId) {
-          activeField = fieldId;
-          document.getElementById('mapModal').style.display = 'block';
-        
-          setTimeout(() => {
-            if (!map) {
-              map = L.map('map').setView([50.4501, 30.5234], 13); // Центр Києва
-              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-              }).addTo(map);
-        
-              map.on('click', function(e) {
-                const lat = e.latlng.lat;
-                const lng = e.latlng.lng;
-        
-                if (selectedMarker) {
-                  map.removeLayer(selectedMarker);
-                }
-        
-                selectedMarker = L.marker([lat, lng]).addTo(map);
-        
-                // Зберігаємо координати
-                document.getElementById(fieldId + '_lat').value = lat;
-                document.getElementById(fieldId + '_lng').value = lng;
-        
-                // Reverse geocoding (безкоштовно через Nominatim API)
-                fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
-                  .then(res => res.json())
-                  .then(data => {
-                    document.getElementById(fieldId).value = data.display_name || `${lat}, ${lng}`;
-                  });
-              });
-            } else {
-              map.invalidateSize();
+
+    let map;
+    let selectedMarker;
+    let activeField = '';
+
+    function openMap(fieldId) {
+      activeField = fieldId;
+      document.getElementById('mapModal').style.display = 'block';
+
+      setTimeout(() => {
+        if (!map) {
+          map = L.map('map').setView([50.4501, 30.5234], 13);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+          }).addTo(map);
+
+          map.on('click', function (e) {
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+
+            if (selectedMarker) {
+              map.removeLayer(selectedMarker);
             }
-          }, 100);
+
+            selectedMarker = L.marker([lat, lng]).addTo(map);
+            document.getElementById(fieldId + '_lat').value = lat;
+            document.getElementById(fieldId + '_lng').value = lng;
+
+            fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+              .then(res => res.json())
+              .then(data => {
+                document.getElementById(fieldId).value = data.display_name || `${lat}, ${lng}`;
+              });
+          });
+        } else {
+          map.setView([50.4501, 30.5234], 13);
+          map.invalidateSize();
         }
-        
-        function closeMap() {
-          document.getElementById('mapModal').style.display = 'none';
-        }
-    </script>
+      }, 200);
+    }
+
+    function closeMap() {
+      document.getElementById('mapModal').style.display = 'none';
+    }
   </script>
-  <!-- Map Modal -->
-  <div id="mapModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:1000;">
-    <div id="map" style="height: 90%; width: 100%;"></div>
-    <button onclick="closeMap()" style="width: 100%; padding: 16px; background-color: #007AFF; color: white; border: none;">✅ Обрати точку</button>
-  </div>
 </body>
 </html>
+
