@@ -24,17 +24,23 @@
       flex-direction: column;
       gap: 16px;
     }
-    input, textarea {
-      padding: 12px;
-      font-size: 16px;
+    .block {
+      border-bottom: 1px solid #E0E0E0;
+      padding-bottom: 12px;
+    }
+    label {
+      font-weight: 500;
+      margin-bottom: 4px;
+      display: block;
+    }
+    input, textarea, select {
+      padding: 10px;
+      font-size: 15px;
       border: 1px solid #CCD1D9;
       border-radius: 8px;
       background-color: #fff;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    }
-    input:focus, textarea:focus {
-      border-color: #007AFF;
-      outline: none;
+      width: 100%;
+      box-sizing: border-box;
     }
     button {
       padding: 14px;
@@ -50,19 +56,98 @@
     button:hover {
       background-color: #005FCC;
     }
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+    .row > div {
+      flex: 1;
+    }
   </style>
 </head>
 <body>
-  <h2>Заявка на переїзд</h2>
+  <h2>🚚 Заявка на переїзд</h2>
   <form id="moveForm">
-    <input type="text" id="from" placeholder="Адреса відправлення" required />
-    <input type="text" id="to" placeholder="Адреса доставки" required />
-    <input type="date" id="date" required />
-    <input type="text" id="time" placeholder="Часовий проміжок (напр. 9:00 - 12:00)" required />
-    <input type="text" id="cargo" placeholder="Що потрібно перевезти?" required />
-    <input type="text" id="phone" placeholder="Номер телефону" required />
-    <textarea id="comment" placeholder="Додаткові побажання" rows="4"></textarea>
-    <button type="submit">Надіслати заявку</button>
+
+    <div class="block">
+      <label>🏙️ Місто відправлення</label>
+      <input type="text" id="city_from" placeholder="Наприклад, Київ" required />
+
+      <label>📍 Адреса відправлення</label>
+      <input type="text" id="from" placeholder="вул. Хрещатик, 1" required />
+
+      <label>🏙️ Місто доставки</label>
+      <input type="text" id="city_to" placeholder="Наприклад, Львів" required />
+    </div>
+
+    <div class="block">
+      <label>📅 Дата відправки</label>
+      <input type="date" id="date" required />
+
+      <label>🕒 Часовий проміжок</label>
+      <select id="time" required>
+        <option value="">Оберіть проміжок</option>
+        <option value="До 9:00">До 9:00</option>
+        <option value="09:00 - 12:00">09:00 - 12:00</option>
+        <option value="12:00 - 15:00">12:00 - 15:00</option>
+        <option value="15:00 - 18:00">15:00 - 18:00</option>
+        <option value="Після 18:00">Після 18:00</option>
+      </select>
+    </div>
+
+    <div class="block">
+      <label>📦 Що перевозимо?</label>
+      <input type="text" id="cargo" placeholder="Меблі, техніка, коробки..." required />
+
+      <label>⚖️ Орієнтовна вага (кг)</label>
+      <input type="text" id="weight" placeholder="Наприклад, 120" />
+
+      <label>📐 Габарити вантажу (максимальні або сумарні)</label>
+      <div class="row">
+        <div><input type="text" id="length" placeholder="Довжина (м)" /></div>
+        <div><input type="text" id="width" placeholder="Ширина (м)" /></div>
+        <div><input type="text" id="height" placeholder="Висота (м)" /></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <label>🚛 Оберіть тип авто</label>
+      <select id="vehicle_type" required>
+        <option value="">Оберіть тип авто</option>
+        <option value="500 кг / 2 м³">500 кг / 2 м³</option>
+        <option value="1 т / 9 м³">1 т / 9 м³</option>
+        <option value="2 т / 12 м³">2 т / 12 м³</option>
+        <option value="5 т / 20 м³">5 т / 20 м³</option>
+        <option value="10 т / 35 м³">10 т / 35 м³</option>
+        <option value="20 т / 45+ м³">20 т / 45+ м³</option>
+      </select>
+
+      <label>🧍 Потрібні вантажники?</label>
+      <select id="loaders">
+        <option value="Не потрібно">Не потрібно</option>
+        <option value="1 вантажник">1 вантажник</option>
+        <option value="2 вантажники">2 вантажники</option>
+        <option value="3 вантажники">3 вантажники</option>
+        <option value="4+ вантажники">4+ вантажники</option>
+      </select>
+
+      <label>🏢 Ліфт у будівлі</label>
+      <select id="elevator">
+        <option value="Не вказано">Не вказано</option>
+        <option value="Є ліфт">Є ліфт</option>
+        <option value="Немає ліфта">Немає ліфта</option>
+      </select>
+    </div>
+
+    <div class="block">
+      <label>📞 Контактний номер телефону</label>
+      <input type="text" id="phone" placeholder="380XXXXXXXXX" required />
+
+      <label>📝 Коментар до замовлення</label>
+      <textarea id="comment" placeholder="Поверх, додаткові умови, інше..."></textarea>
+    </div>
+
+    <button type="submit">✅ Надіслати заявку</button>
   </form>
 
   <script>
@@ -74,11 +159,19 @@
       e.preventDefault();
 
       const data = {
+        city_from: document.getElementById("city_from").value,
         from: document.getElementById("from").value,
-        to: document.getElementById("to").value,
+        city_to: document.getElementById("city_to").value,
         date: document.getElementById("date").value,
         time: document.getElementById("time").value,
         cargo: document.getElementById("cargo").value,
+        weight: document.getElementById("weight").value,
+        length: document.getElementById("length").value,
+        width: document.getElementById("width").value,
+        height: document.getElementById("height").value,
+        vehicle_type: document.getElementById("vehicle_type").value,
+        loaders: document.getElementById("loaders").value,
+        elevator: document.getElementById("elevator").value,
         phone: document.getElementById("phone").value,
         comment: document.getElementById("comment").value,
         telegram_id: tg.initDataUnsafe?.user?.id || null,
