@@ -22,25 +22,26 @@
     form {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 24px;
     }
     .block {
       border-bottom: 1px solid #E0E0E0;
-      padding-bottom: 12px;
+      padding-bottom: 20px;
     }
     label {
       font-weight: 500;
-      margin-bottom: 4px;
+      margin-bottom: 8px;
       display: block;
     }
     input, textarea, select {
-      padding: 10px;
+      padding: 12px;
       font-size: 15px;
       border: 1px solid #CCD1D9;
       border-radius: 8px;
       background-color: #fff;
       width: 100%;
       box-sizing: border-box;
+      margin-bottom: 16px;
     }
     button {
       padding: 14px;
@@ -78,6 +79,9 @@
 
       <label>🏙️ Місто доставки</label>
       <input type="text" id="city_to" placeholder="Наприклад, Львів" required />
+
+      <label>📍 Адреса доставки</label>
+      <input type="text" id="to" placeholder="вул. Городоцька, 15" required />
     </div>
 
     <div class="block">
@@ -162,6 +166,7 @@
         city_from: document.getElementById("city_from").value,
         from: document.getElementById("from").value,
         city_to: document.getElementById("city_to").value,
+        to: document.getElementById("to").value,
         date: document.getElementById("date").value,
         time: document.getElementById("time").value,
         cargo: document.getElementById("cargo").value,
