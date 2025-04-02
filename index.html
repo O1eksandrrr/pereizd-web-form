@@ -74,6 +74,23 @@
     .row > div {
       flex: 1;
     }
+    .location-btn {
+      padding: 0 16px;
+      background-color: #007AFF;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 20px;
+      cursor: pointer;
+      height: 48px; /* така ж висота, як у input */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+    }
+    .location-btn:hover {
+      background-color: #005FCC;
+    }
   </style>
 </head>
 <body>
@@ -86,7 +103,7 @@
       <label>📍 Адреса відправлення</label>
       <div style="display: flex; gap: 8px;">
         <input type="text" id="from" placeholder="вул. Хрещатик, 1" required />
-        <button type="button" onclick="openMap('from')">📌</button>
+        <button type="button" class="location-btn" onclick="openMap('from')">📍</button>
       </div>
       <input type="hidden" id="from_lat" name="from_lat">
       <input type="hidden" id="from_lng" name="from_lng">
@@ -97,7 +114,7 @@
       <label>🟢 Адреса доставки</label>
       <div style="display: flex; gap: 8px;">
         <input type="text" id="to" placeholder="вул. Городоцька, 15" required />
-        <button type="button" onclick="openMap('to')">📌</button>
+       <button type="button" class="location-btn" onclick="openMap('to')">📍</button>
       </div>
       <input type="hidden" id="to_lat" name="to_lat">
       <input type="hidden" id="to_lng" name="to_lng">
