@@ -10,21 +10,22 @@
     .telegram-btn {
       background-color: #e0f2ff;
       color: #004B87;
-      padding: 12px 20px;
+      padding: 12px 24px;
       font-size: 16px;
       font-weight: 500;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
       transition: background-color 0.3s ease;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: auto;
       display: inline-block;
+      max-width: 280px; /* ✅ додаємо обмеження ширини */
+      width: 100%;
     }
     .telegram-button-wrapper {
       text-align: center;
       margin: 24px 0;
-    }  
+    } 
     html, body {
       height: 100%;
       overflow-y: auto;
