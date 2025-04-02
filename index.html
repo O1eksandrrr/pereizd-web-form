@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Форма переїзду</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+      body { font-family: Arial; padding: 20px; }
+      input, textarea { width: 100%; margin-bottom: 10px; padding: 8px; }
+      button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; }
+    </style>
+  </head>
+  <body>
+    <h3>📦 Форма замовлення переїзду</h3>
+    <input type="text" id="from" placeholder="Звідки (адреса)" required />
+    <input type="text" id="to" placeholder="Куди (адреса)" required />
+    <input type="date" id="date" required />
+    <textarea id="comment" placeholder="Коментар (необов’язково)"></textarea>
+    <button onclick="submitForm()">Надіслати</button>
+
+    <script>
+      function submitForm() {
+        const data = {
+          from: document.getElementById('from').value,
+          to: document.getElementById('to').value,
+          date: document.getElementById('date').value,
+          comment: document.getElementById('comment').value,
+        };
+        Telegram.WebApp.sendData(JSON.stringify(data));
+        Telegram.WebApp.close();
+      }
+    </script>
+  </body>
+</html>
