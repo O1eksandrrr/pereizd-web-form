@@ -203,12 +203,26 @@
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
       const data = {
+        city_from: document.getElementById("city_from").value,
         from: document.getElementById("from").value,
+        city_to: document.getElementById("city_to").value,
         to: document.getElementById("to").value,
         from_lat: document.getElementById("from_lat").value,
         from_lng: document.getElementById("from_lng").value,
         to_lat: document.getElementById("to_lat").value,
         to_lng: document.getElementById("to_lng").value,
+        date: document.getElementById("date").value,
+        time: document.getElementById("time").value,
+        cargo: document.getElementById("cargo").value,
+        weight: document.getElementById("weight").value,
+        length: document.getElementById("length").value,
+        width: document.getElementById("width").value,
+        height: document.getElementById("height").value,
+        vehicle_type: document.getElementById("vehicle_type").value,
+        loaders: document.getElementById("loaders").value,
+        elevator: document.getElementById("elevator").value,
+        phone: document.getElementById("phone").value,
+        comment: document.getElementById("comment").value
       };
       try {
         await fetch("https://firstbs.app.n8n.cloud/webhook/ad4ad8cd-4831-46de-8810-41a08324a8d3", {
