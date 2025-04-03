@@ -223,6 +223,9 @@
         elevator: document.getElementById("elevator").value,
         phone: document.getElementById("phone").value,
         comment: document.getElementById("comment").value
+        telegram_id: tg.initDataUnsafe?.user?.id || null,
+        username: tg.initDataUnsafe?.user?.username || null,
+        full_name: `${tg.initDataUnsafe?.user?.first_name || ''} ${tg.initDataUnsafe?.user?.last_name || ''}`.trim(),
       };
       try {
         await fetch("https://firstbs.app.n8n.cloud/webhook/ad4ad8cd-4831-46de-8810-41a08324a8d3", {
