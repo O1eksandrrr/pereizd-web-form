@@ -218,6 +218,7 @@
         });
         tg.close();
       } catch (err) {
+        console.error("Fetch error:", err);
         alert("Помилка надсилання! Спробуйте ще раз.");
       }
     });
