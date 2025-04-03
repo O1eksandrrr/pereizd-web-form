@@ -213,9 +213,14 @@
       try {
         await fetch("https://firstbs.app.n8n.cloud/webhook/ad4ad8cd-4831-46de-8810-41a08324a8d3", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          mode: "cors",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          },
           body: JSON.stringify(data)
         });
+      
         tg.close();
       } catch (err) {
         console.error("Fetch error:", err);
