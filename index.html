@@ -23,8 +23,9 @@
       display: flex;
       flex-direction: column;
       gap: 24px;
-      max-width: 500px;
+      max-width: 700px;
       margin: 0 auto;
+      width: 100%;
     }
     .block { margin-top: 16px; border-bottom: 1px solid #E0E0E0; padding-bottom: 20px; }
     label { font-weight: 500; margin-bottom: 6px; display: block; }
@@ -321,11 +322,12 @@ cityInputs.forEach(({ inputId, latId, lngId }) => {
 
         const rect = input.getBoundingClientRect();
         const parentRect = input.parentElement.getBoundingClientRect();
-        suggestionsBox.style.top = `${parentRect.bottom + window.scrollY}px`;
-        suggestionsBox.style.left = `${parentRect.left + window.scrollX}px`;
-        suggestionsBox.style.width = `${parentRect.width}px`;
-        suggestionsBox.style.display = 'block';
-        input.parentElement.appendChild(suggestionsBox);
+        const inputRect = input.getBoundingClientRect();
+        const scrollY = window.scrollY || document.documentElement.scrollTop;
+        suggestionsBox.style.top = `${inputRect.bottom + scrollY}px`;
+        suggestionsBox.style.left = `${inputRect.left}px`;
+        suggestionsBox.style.width = `${inputRect.width}px`;
+        document.body.appendChild(suggestionsBox);
 
       } catch (e) {
         console.error("Autocomplete fetch error:", e);
