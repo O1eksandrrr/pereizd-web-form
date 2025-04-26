@@ -321,13 +321,13 @@ cityInputs.forEach(({ inputId, latId, lngId }) => {
         });
 
         const rect = input.getBoundingClientRect();
-        const parentRect = input.parentElement.getBoundingClientRect();
-        const inputRect = input.getBoundingClientRect();
         const scrollY = window.scrollY || document.documentElement.scrollTop;
-        suggestionsBox.style.top = `${inputRect.bottom + scrollY}px`;
-        suggestionsBox.style.left = `${inputRect.left}px`;
-        suggestionsBox.style.width = `${inputRect.width}px`;
+        suggestionsBox.style.position = 'absolute';
+        suggestionsBox.style.top = `${rect.bottom + scrollY}px`;
+        suggestionsBox.style.left = `${rect.left}px`;
+        suggestionsBox.style.width = `${rect.width}px`;
         suggestionsBox.style.display = 'block';
+        document.body.appendChild(suggestionsBox);
 
       } catch (e) {
         console.error("Autocomplete fetch error:", e);
