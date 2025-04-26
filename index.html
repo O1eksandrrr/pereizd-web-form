@@ -242,7 +242,15 @@
       const data = await res.json();
       return data.filter(item => ['city','town','village'].includes(item.type)).map(item => {
         const a = item.address;
-        return { name: `${a.city || a.town || a.village || ''}, ${a.county || ''}, ${a.state || ''}`, lat: item.lat, lon: item.lon };
+        const city = a.city || a.town || a.village || '';
+        const parts = [city];
+        if (a.county && a.county !== city) parts.push(a.county);
+        if (a.state && a.state !== city && a.state !== a.county) parts.push(a.state);
+        return {
+          name: parts.join(', '),
+          lat: item.lat,
+          lon: item.lon
+        };
       });
     }
 
