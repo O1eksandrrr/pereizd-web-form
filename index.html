@@ -91,6 +91,28 @@
     .location-btn:hover {
       background-color: #005FCC;
     }
+    input.valid {
+      border-color: #2ecc71 !important; /* Зелена рамка */
+    }
+    input.invalid {
+      border-color: #e74c3c !important; /* Червона рамка */
+    }
+    .suggestion-list {
+      position: absolute;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 9999;
+    }
+    .suggestion-item {
+      padding: 10px;
+      cursor: pointer;
+    }
+    .suggestion-item:hover {
+      background-color: #f0f0f0;
+    }
   </style>
 </head>
 <body>
@@ -98,7 +120,10 @@
   <form id="moveForm">
     <div class="block">
       <label>🌆 Місто відправлення</label>
-      <input type="text" id="city_from" placeholder="Наприклад, Київ" required />
+      <div style="position: relative;">
+        <input type="text" id="city_from" placeholder="Наприклад, Київ" autocomplete="off" required />
+        <div id="suggestions_city_from" class="suggestion-list" style="display: none;"></div>
+      </div>
 
       <label>📍 Адреса відправлення</label>
       <div style="display: flex; gap: 8px;">
@@ -109,7 +134,10 @@
       <input type="hidden" id="from_lng" name="from_lng">
 
       <label>🌆 Місто доставки</label>
-      <input type="text" id="city_to" placeholder="Наприклад, Львів" required />
+      <div style="position: relative;">
+        <input type="text" id="city_to" placeholder="Наприклад, Львів" autocomplete="off" required />
+        <div id="suggestions_city_to" class="suggestion-list" style="display: none;"></div>
+      </div>
 
       <label>🟢 Адреса доставки</label>
       <div style="display: flex; gap: 8px;">
@@ -290,6 +318,66 @@
     function closeMap() {
       document.getElementById('mapModal').style.display = 'none';
     }
+   
+    async function fetchCities(query) {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&accept-language=uk&q=${encodeURIComponent(query)}&countrycodes=ua&limit=5`);
+      const data = await res.json();
+      return data.map(item => ({
+        name: item.display_name,
+        lat: item.lat,
+        lon: item.lon
+      }));
+    }
+    
+    function setupCityAutocomplete(inputId, suggestionsId) {
+      const input = document.getElementById(inputId);
+      const suggestionsBox = document.getElementById(suggestionsId);
+    
+      input.addEventListener("input", async function () {
+        const value = input.value.trim();
+        if (value.length < 3) {
+          suggestionsBox.style.display = "none";
+          return;
+        }
+    
+        const suggestions = await fetchCities(value);
+        suggestionsBox.innerHTML = "";
+        if (suggestions.length === 0) {
+          suggestionsBox.style.display = "none";
+          return;
+        }
+    
+        suggestions.forEach(s => {
+          const div = document.createElement("div");
+          div.className = "suggestion-item";
+          div.textContent = s.name;
+          div.addEventListener("click", () => {
+            input.value = s.name;
+            input.classList.add("valid");
+            input.classList.remove("invalid");
+            suggestionsBox.style.display = "none";
+          });
+          suggestionsBox.appendChild(div);
+        });
+        suggestionsBox.style.display = "block";
+      });
+    
+      input.addEventListener("blur", () => {
+        setTimeout(() => {
+          suggestionsBox.style.display = "none";
+        }, 150);
+      });
+    
+      input.addEventListener("focus", () => {
+        if (input.value.length >= 3) {
+          input.dispatchEvent(new Event("input"));
+        }
+      });
+    }
+    
+    setupCityAutocomplete("city_from", "suggestions_city_from");
+    setupCityAutocomplete("city_to", "suggestions_city_to");
+</script>
   </script>
 </body>
 </html>
