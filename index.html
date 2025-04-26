@@ -37,7 +37,10 @@
     }
     button:hover, .location-btn:hover { background-color: #005FCC; }
     .row { display: flex; gap: 10px; }
-    .row > div { flex: 1; }
+    .row > div {
+  flex: 1 1 0;
+  min-width: 0;
+}
     .location-btn {
       height: 48px; display: flex;
       align-items: center; justify-content: center;
@@ -119,10 +122,10 @@
 
       <label>📐 Габарити вантажу</label>
       <div class="row">
-        <div><input type="number" id="length" placeholder="Довжина (м)" step="0.01" min="0" /></div>
-        <div><input type="number" id="width" placeholder="Ширина (м)" step="0.01" min="0" /></div>
-        <div><input type="number" id="height" placeholder="Висота (м)" step="0.01" min="0" /></div>
-      </div>
+  <div><input type="number" id="length" placeholder="Довжина (м)" step="0.01" min="0" style="width: 100%;" /></div>
+  <div><input type="number" id="width" placeholder="Ширина (м)" step="0.01" min="0" style="width: 100%;" /></div>
+  <div><input type="number" id="height" placeholder="Висота (м)" step="0.01" min="0" style="width: 100%;" /></div>
+</div>
     </div>
 
     <div class="block">
