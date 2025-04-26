@@ -355,6 +355,7 @@
     
         const suggestions = await fetchCities(value);
         suggestionsBox.innerHTML = "";
+    
         if (suggestions.length === 0) {
           input.classList.add("invalid");
           input.classList.remove("valid");
@@ -376,29 +377,33 @@
         });
     
         const rect = input.getBoundingClientRect();
-        suggestionsBox.style.top = `${input.offsetTop + input.offsetHeight}px`;
-        suggestionsBox.style.left = `${input.offsetLeft}px`;
-        suggestionsBox.style.width = `${input.offsetWidth}px`;
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+    
+        suggestionsBox.style.position = "absolute";
+        suggestionsBox.style.top = `${rect.bottom + scrollTop}px`;
+        suggestionsBox.style.left = `${rect.left + scrollLeft}px`;
+        suggestionsBox.style.width = `${rect.width}px`;
         suggestionsBox.style.display = "block";
       });
-
+    
       input.addEventListener("blur", () => {
         setTimeout(() => {
           suggestionsBox.style.display = "none";
-        }, 100);
+        }, 200);
       });
     
       input.addEventListener("focus", () => {
         if (input.value.length >= 3) {
           input.dispatchEvent(new Event("input"));
-          }
-        });
-      }
+        }
+      });
+    }
         
       setupCityAutocomplete("city_from", "suggestions_city_from");
       setupCityAutocomplete("city_to", "suggestions_city_to");
+    
 </script>
-  </script>
 </body>
 </html>
 
