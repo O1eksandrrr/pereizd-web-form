@@ -284,8 +284,9 @@ cityInputs.forEach(({ inputId, latId, lngId }) => {
           const { address } = place;
           const city = address.city || address.town || address.village || place.display_name.split(',')[0];
           const region = address.state || address.region || '';
+          const country = address.country || '';
           return {
-            name: `${city}, ${region}`,
+            name: `${city}${region ? ', ' + region : ''}${country && country !== region ? ', ' + country : ''}`,
             lat: place.lat,
             lon: place.lon
           };
