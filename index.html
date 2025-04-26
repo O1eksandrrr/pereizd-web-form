@@ -45,10 +45,16 @@
     input.valid { border-color: #2ecc71 !important; }
     input.invalid { border-color: #e74c3c !important; }
     .suggestion-list {
-      position: absolute; background-color: #fff;
-      border: 1px solid #ddd; border-radius: 4px;
-      max-height: 250px; overflow-y: auto;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1); z-index: 9999;
+      position: absolute;
+      background-color: #fff;
+      border: 1px solid #CCD1D9;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      margin-top: 4px;
+      width: 100%;
+      max-height: 250px;
+      overflow-y: auto;
+      z-index: 9999;
     }
     .suggestion-item {
       padding: 10px 14px; cursor: pointer; font-size: 15px;
@@ -297,9 +303,9 @@ cityInputs.forEach(({ inputId, latId, lngId }) => {
         });
 
         const rect = input.getBoundingClientRect();
-        suggestionsBox.style.top = `${rect.bottom + window.scrollY}px`;
-        suggestionsBox.style.left = `${rect.left + window.scrollX}px`;
-        suggestionsBox.style.width = `${rect.width}px`;
+        suggestionsBox.style.top = `${input.offsetTop + input.offsetHeight + 4}px`;
+        suggestionsBox.style.left = `${input.offsetLeft}px`;
+        suggestionsBox.style.width = `${input.offsetWidth}px`;
         suggestionsBox.style.display = 'block';
         input.parentElement.appendChild(suggestionsBox);
 
