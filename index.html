@@ -25,9 +25,9 @@
     input, textarea, select {
       padding: 14px; font-size: 16px;
       border: 1px solid #CCD1D9; border-radius: 10px;
-      background-color: #fff; width: 100%;
+      background-color: #fff;
+      width: 100%; max-width: none;
       box-sizing: border-box; margin-bottom: 24px;
-      max-width: 100%;
     }
     button, .location-btn {
       padding: 14px; background-color: #007AFF;
@@ -247,7 +247,12 @@
       const showSuggestions = debounce(async () => {
         const value = input.value.trim();
         if (value.length < 3) return suggestionsBox.style.display = 'none';
-        const results = await fetchCities(value);
+        let results = [];
+        try {
+          results = await fetchCities(value);
+        } catch (e) {
+          console.error('Autocomplete fetch error:', e);
+        }
         suggestionsBox.innerHTML = "";
 
         if (!results.length) {
