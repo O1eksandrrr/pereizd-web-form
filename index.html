@@ -20,24 +20,20 @@
     }
     h2 { margin-bottom: 20px; font-weight: 600; color: #007AFF; }
     form {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 0;
-  margin: 0 auto;
-  max-width: 100vw;
-}
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
     .block { margin-top: 16px; border-bottom: 1px solid #E0E0E0; padding-bottom: 20px; }
     label { font-weight: 500; margin-bottom: 6px; display: block; }
     input, textarea, select {
       padding: 14px; font-size: 16px;
       border: 1px solid #CCD1D9; border-radius: 10px;
       background-color: #fff;
+      width: 100%;
       box-sizing: border-box; margin-bottom: 24px;
-      width: calc(100vw - 2px);
-      max-width: 100%;
-      margin-left: auto;
-      margin-right: auto;
     }
     button, .location-btn {
       padding: 14px; background-color: #007AFF;
@@ -60,14 +56,13 @@
     .suggestion-list {
       position: absolute;
       background-color: #fff;
-      border: 1px solid #CCD1D9;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      margin-top: 4px;
-      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 4px;
       max-height: 250px;
       overflow-y: auto;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       z-index: 9999;
+      width: 100%;
     }
     .suggestion-item {
       padding: 10px 14px; cursor: pointer; font-size: 15px;
@@ -325,9 +320,10 @@ cityInputs.forEach(({ inputId, latId, lngId }) => {
         });
 
         const rect = input.getBoundingClientRect();
-        suggestionsBox.style.top = `${input.offsetTop + input.offsetHeight + 4}px`;
-        suggestionsBox.style.left = `${input.offsetLeft}px`;
-        suggestionsBox.style.width = `${input.offsetWidth}px`;
+        const parentRect = input.parentElement.getBoundingClientRect();
+        suggestionsBox.style.top = `${parentRect.bottom + window.scrollY}px`;
+        suggestionsBox.style.left = `${parentRect.left + window.scrollX}px`;
+        suggestionsBox.style.width = `${parentRect.width}px`;
         suggestionsBox.style.display = 'block';
         input.parentElement.appendChild(suggestionsBox);
 
