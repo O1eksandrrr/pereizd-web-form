@@ -4,64 +4,225 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Заявка на переїзд</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <style>
+    html {
+      scroll-behavior: smooth;
+    }
     html, body {
       height: 100%;
       overflow-y: auto;
+    }
+    body {
       font-family: 'Inter', sans-serif;
       background-color: #F5F7FA;
       margin: 0;
       padding: 24px;
       color: #2C3E50;
     }
-    h2 { margin-bottom: 20px; font-weight: 600; color: #007AFF; }
-    form { display: flex; flex-direction: column; gap: 24px; }
-    .block { margin-top: 16px; border-bottom: 1px solid #E0E0E0; padding-bottom: 20px; }
-    label { font-weight: 500; margin-bottom: 6px; display: block; }
-    input, textarea, select {
-      padding: 12px; font-size: 15px;
-      border: 1px solid #CCD1D9; border-radius: 8px;
-      background-color: #fff; width: 100%;
-      box-sizing: border-box; margin-bottom: 24px;
+    h2 {
+      margin-bottom: 20px;
+      font-weight: 600;
+      color: #007AFF;
     }
-    button, .location-btn {
-      padding: 14px; background-color: #007AFF;
-      color: white; border: none; border-radius: 8px;
-      font-size: 16px; font-weight: 500; cursor: pointer;
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .block {
+      margin-top: 16px;
+      border-bottom: 1px solid #E0E0E0;
+      padding-bottom: 20px;
+    }
+    label {
+      font-weight: 500;
+      margin-bottom: 6px;
+      display: block;
+    }
+    input, textarea, select {
+      padding: 12px;
+      font-size: 15px;
+      border: 1px solid #CCD1D9;
+      border-radius: 8px;
+      background-color: #fff;
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 24px;
+    }
+    button {
+      padding: 14px;
+      background-color: #007AFF;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
       transition: background-color 0.2s ease;
     }
-    button:hover, .location-btn:hover { background-color: #005FCC; }
-    .row { display: flex; gap: 10px; }
-    .row > div { flex: 1; }
-    .location-btn {
-      height: 48px; display: flex;
-      align-items: center; justify-content: center;
+    button:hover {
+      background-color: #005FCC;
     }
-    input.valid { border-color: #2ecc71 !important; }
-    input.invalid { border-color: #e74c3c !important; }
-    .suggestion-list {
-      position: absolute; background-color: #fff;
-      border: 1px solid #ddd; border-radius: 4px;
-      max-height: 250px; overflow-y: auto;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1); z-index: 9999;
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+    .row > div {
+      flex: 1;
+    }
+    .location-btn {
+      padding: 0 16px;
+      background-color: #007AFF;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 20px;
+      cursor: pointer;
+      height: 48px; /* така ж висота, як у input */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease;
+    }
+    .location-btn:hover {
+      background-color: #005FCC;
+    }
+    input.valid {
+      border-color: #2ecc71 !important; /* Зелена рамка */
+    }
+    input.invalid {
+      border-color: #e74c3c !important; /* Червона рамка */
+    }
+   .suggestion-list {
+      position: absolute;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      max-height: 250px;
+      overflow-y: auto;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      z-index: 9999;
     }
     .suggestion-item {
-      padding: 10px 14px; cursor: pointer; font-size: 15px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 15px;
     }
-    .suggestion-item:hover { background-color: #f5f5f5; }
+    .suggestion-item:hover {
+      background-color: #f5f5f5;
+    }
   </style>
 </head>
 <body>
   <h2>🚚 Заявка на переїзд</h2>
-  <form id="moveForm"></form>
+  <form id="moveForm">
+    <div class="block">
+      <label>🌆 Місто відправлення</label>
+      <div style="position: relative;">
+        <input type="text" id="city_from" placeholder="Наприклад, Київ" autocomplete="off" required />
+        <div id="suggestions_city_from" class="suggestion-list" style="display: none;"></div>
+      </div>
+
+      <label>📍 Адреса відправлення</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="from" placeholder="вул. Хрещатик, 1" required />
+        <button type="button" class="location-btn" onclick="openMap('from')">📍</button>
+      </div>
+      <input type="hidden" id="from_lat" name="from_lat">
+      <input type="hidden" id="from_lng" name="from_lng">
+
+      <label>🌆 Місто доставки</label>
+      <div style="position: relative;">
+        <input type="text" id="city_to" placeholder="Наприклад, Львів" autocomplete="off" required />
+        <div id="suggestions_city_to" class="suggestion-list" style="display: none;"></div>
+      </div>
+
+      <label>🟢 Адреса доставки</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="to" placeholder="вул. Городоцька, 15" required />
+       <button type="button" class="location-btn" onclick="openMap('to')">📍</button>
+      </div>
+      <input type="hidden" id="to_lat" name="to_lat">
+      <input type="hidden" id="to_lng" name="to_lng">
+    </div>
+
+    <div class="block">
+      <label>📅 Дата відправки</label>
+      <input type="date" id="date" required />
+
+      <label>🕒 Часовий проміжок</label>
+      <select id="time" required>
+        <option value="">Оберіть проміжок</option>
+        <option value="До 9:00">До 9:00</option>
+        <option value="09:00 - 12:00">09:00 - 12:00</option>
+        <option value="12:00 - 15:00">12:00 - 15:00</option>
+        <option value="15:00 - 18:00">15:00 - 18:00</option>
+        <option value="Після 18:00">Після 18:00</option>
+      </select>
+    </div>
+
+    <div class="block">
+      <label>📦 Що перевозимо?</label>
+      <input type="text" id="cargo" placeholder="Меблі, техніка, коробки..." required />
+
+      <label>⚖️ Орієнтовна вага (кг)</label>
+      <input type="number" id="weight" placeholder="Наприклад, 120" step="0.01" min="0" />
+
+      <label>📐 Габарити вантажу (максимальні або сумарні)</label>
+      <div class="row">
+        <div><input type="number" id="length" placeholder="Довжина (м)" step="0.01" min="0" /></div>
+        <div><input type="number" id="width" placeholder="Ширина (м)" step="0.01" min="0" /></div>
+        <div><input type="number" id="height" placeholder="Висота (м)" step="0.01" min="0" /></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <label>🚛 Оберіть тип авто</label>
+      <select id="vehicle_type" required>
+        <option value="">Оберіть тип авто</option>
+        <option value="500 кг / 2 м³">500 кг / 2 м³</option>
+        <option value="1 т / 9 м³">1 т / 9 м³</option>
+        <option value="2 т / 12 м³">2 т / 12 м³</option>
+        <option value="5 т / 20 м³">5 т / 20 м³</option>
+        <option value="10 т / 35 м³">10 т / 35 м³</option>
+        <option value="20 т / 45+ м³">20 т / 45+ м³</option>
+      </select>
+
+      <label>🧍 Потрібні вантажники?</label>
+      <select id="loaders">
+        <option value="Не потрібно">Не потрібно</option>
+        <option value="1 вантажник">1 вантажник</option>
+        <option value="2 вантажники">2 вантажники</option>
+        <option value="3 вантажники">3 вантажники</option>
+        <option value="4+ вантажники">4+ вантажники</option>
+      </select>
+
+      <label>🏢 Ліфт у будівлі</label>
+      <select id="elevator">
+        <option value="Не вказано">Не вказано</option>
+        <option value="Є ліфт">Є ліфт</option>
+        <option value="Немає ліфта">Немає ліфта</option>
+      </select>
+    </div>
+
+    <div class="block">
+      <label>📞 Контактний номер телефону</label>
+      <input type="tel" id="phone" placeholder="380XXXXXXXXX" pattern="[0-9]{10,15}" required />
+
+      <label>📝 Коментар до замовлення</label>
+      <textarea id="comment" placeholder="Поверх, додаткові умови, інше..."></textarea>
+    </div>
+
+    <button type="submit">✅ Надіслати заявку</button>
+  </form>
 
   <div id="mapModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:1000;">
     <div id="map" style="height: 90%; width: 100%;"></div>
-    <button type="button" onclick="closeMap()">✅ Обрати точку</button>
+    <button onclick="closeMap()" style="width: 100%; padding: 16px; background-color: #007AFF; color: white; border: none;">✅ Обрати точку</button>
   </div>
 
   <script>
@@ -69,113 +230,44 @@
     tg.expand();
 
     const form = document.getElementById("moveForm");
-    const fields = [
-      { id: "city_from", label: "🌆 Місто відправлення", required: true, autocomplete: true },
-      { id: "from", label: "📍 Адреса відправлення", required: true, mapBtn: true },
-      { id: "from_lat", hidden: true },
-      { id: "from_lng", hidden: true },
-      { id: "city_to", label: "🌆 Місто доставки", required: true, autocomplete: true },
-      { id: "to", label: "🟢 Адреса доставки", required: true, mapBtn: true },
-      { id: "to_lat", hidden: true },
-      { id: "to_lng", hidden: true },
-      { id: "date", label: "📅 Дата відправки", type: "date", required: true },
-      { id: "time", label: "🕒 Часовий проміжок", type: "select", options: ["До 9:00","09:00 - 12:00","12:00 - 15:00","15:00 - 18:00","Після 18:00"], required: true },
-      { id: "cargo", label: "📦 Що перевозимо?", required: true },
-      { id: "weight", label: "⚖️ Орієнтовна вага (кг)", type: "number" },
-      { label: "📐 Габарити вантажу (максимальні або сумарні)", subfields: [
-        { id: "length", placeholder: "Довжина (м)", type: "number" },
-        { id: "width", placeholder: "Ширина (м)", type: "number" },
-        { id: "height", placeholder: "Висота (м)", type: "number" },
-      ] },
-      { id: "vehicle_type", label: "🚛 Оберіть тип авто", type: "select", required: true, options: [
-        "500 кг / 2 м³", "1 т / 9 м³", "2 т / 12 м³", "5 т / 20 м³", "10 т / 35 м³", "20 т / 45+ м³"] },
-      { id: "loaders", label: "🧍 Потрібні вантажники?", type: "select", options: ["Не потрібно", "1 вантажник", "2 вантажники", "3 вантажники", "4+ вантажники"] },
-      { id: "elevator", label: "🏢 Ліфт у будівлі", type: "select", options: ["Не вказано", "Є ліфт", "Немає ліфта"] },
-      { id: "phone", label: "📞 Контактний номер телефону", type: "tel", required: true },
-      { id: "comment", label: "📝 Коментар до замовлення", type: "textarea" }
-    ];
-
-    fields.forEach(field => {
-      const div = document.createElement('div');
-      div.className = 'block';
-      if (field.label) {
-        const label = document.createElement('label');
-        label.htmlFor = field.id;
-        label.innerText = field.label;
-        div.appendChild(label);
-      }
-
-      if (field.subfields) {
-        const row = document.createElement('div');
-        row.className = 'row';
-        field.subfields.forEach(sub => {
-          const input = document.createElement('input');
-          input.type = sub.type || 'text';
-          input.id = sub.id;
-          input.placeholder = sub.placeholder;
-          input.step = '0.01';
-          input.min = '0';
-          const wrapper = document.createElement('div');
-          wrapper.appendChild(input);
-          row.appendChild(wrapper);
-        });
-        div.appendChild(row);
-      } else if (!field.hidden) {
-        const input = field.type === 'select' ? document.createElement('select') :
-                      field.type === 'textarea' ? document.createElement('textarea') :
-                      document.createElement('input');
-        if (field.id) input.id = field.id;
-        if (field.placeholder) input.placeholder = field.placeholder;
-        if (field.required) input.required = true;
-        if (field.type) input.type = field.type;
-        if (field.type === 'select') {
-          input.innerHTML = `<option value="">Оберіть</option>` + field.options.map(o => `<option value="${o}">${o}</option>`).join('');
-        }
-        div.appendChild(input);
-        if (field.mapBtn) {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'location-btn';
-          btn.innerText = '📍';
-          btn.onclick = () => openMap(field.id);
-          const wrapper = document.createElement('div');
-          wrapper.style.display = 'flex';
-          wrapper.style.gap = '8px';
-          wrapper.append(input, btn);
-          div.appendChild(wrapper);
-        }
-      } else {
-        const hidden = document.createElement('input');
-        hidden.type = 'hidden';
-        hidden.id = field.id;
-        div.appendChild(hidden);
-      }
-
-      form.appendChild(div);
-    });
-
-    const submitBtn = document.createElement('button');
-    submitBtn.type = 'submit';
-    submitBtn.innerText = '✅ Надіслати заявку';
-    form.appendChild(submitBtn);
-
-    form.addEventListener("submit", async (e) => {
+    form.addEventListener("submit", async function (e) {
       e.preventDefault();
-      const data = {};
-      document.querySelectorAll("#moveForm input, #moveForm select, #moveForm textarea").forEach(el => {
-        data[el.id] = el.value;
-      });
-      data.telegram_id = tg.initDataUnsafe?.user?.id || null;
-      data.username = tg.initDataUnsafe?.user?.username || null;
-      data.full_name = `${tg.initDataUnsafe?.user?.first_name || ''} ${tg.initDataUnsafe?.user?.last_name || ''}`.trim();
+      const data = {
+        city_from: document.getElementById("city_from").value,
+        from: document.getElementById("from").value,
+        city_to: document.getElementById("city_to").value,
+        to: document.getElementById("to").value,
+        from_lat: document.getElementById("from_lat").value,
+        from_lng: document.getElementById("from_lng").value,
+        to_lat: document.getElementById("to_lat").value,
+        to_lng: document.getElementById("to_lng").value,
+        date: document.getElementById("date").value,
+        time: document.getElementById("time").value,
+        cargo: document.getElementById("cargo").value,
+        weight: document.getElementById("weight").value,
+        length: document.getElementById("length").value,
+        width: document.getElementById("width").value,
+        height: document.getElementById("height").value,
+        vehicle_type: document.getElementById("vehicle_type").value,
+        loaders: document.getElementById("loaders").value,
+        elevator: document.getElementById("elevator").value,
+        phone: document.getElementById("phone").value,
+        comment: document.getElementById("comment").value,
+        telegram_id: tg.initDataUnsafe?.user?.id || null,
+        username: tg.initDataUnsafe?.user?.username || null,
+        full_name: `${tg.initDataUnsafe?.user?.first_name || ''} ${tg.initDataUnsafe?.user?.last_name || ''}`.trim(),
+      };
       try {
         await fetch("https://firstbs.app.n8n.cloud/webhook/ad4ad8cd-4831-46de-8810-41a08324a8d3", {
           method: "POST",
           mode: "cors",
-          headers: { "Accept": "application/json", "Content-Type": "application/json" },
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          },
           body: JSON.stringify(data)
         });
-        alert("Заявку надіслано успішно!");
+      
         tg.close();
       } catch (err) {
         console.error("Fetch error:", err);
@@ -183,10 +275,14 @@
       }
     });
 
-    let map, selectedMarker, activeField;
+    let map;
+    let selectedMarker;
+    let activeField = '';
+
     function openMap(fieldId) {
       activeField = fieldId;
       document.getElementById('mapModal').style.display = 'block';
+    
       setTimeout(() => {
         if (!map) {
           map = L.map('map').setView([50.4501, 30.5234], 13);
@@ -194,67 +290,79 @@
             attribution: '&copy; OpenStreetMap contributors'
           }).addTo(map);
         }
+    
+        // Очищаємо всі старі click-обробники перед додаванням нового
         map.off('click');
         map.on('click', function (e) {
           const lat = e.latlng.lat;
           const lng = e.latlng.lng;
-          if (selectedMarker) map.removeLayer(selectedMarker);
+    
+          if (selectedMarker) {
+            map.removeLayer(selectedMarker);
+          }
+    
           selectedMarker = L.marker([lat, lng]).addTo(map);
-          document.getElementById(`${activeField}_lat`).value = lat;
-          document.getElementById(`${activeField}_lng`).value = lng;
+    
+          document.getElementById(activeField + '_lat').value = lat;
+          document.getElementById(activeField + '_lng').value = lng;
+    
           fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
             .then(res => res.json())
             .then(data => {
               document.getElementById(activeField).value = data.display_name || `${lat}, ${lng}`;
             });
         });
+    
         map.setView([50.4501, 30.5234], 13);
         map.invalidateSize();
       }, 200);
     }
-
     function closeMap() {
       document.getElementById('mapModal').style.display = 'none';
     }
-
-    const debounce = (fn, delay) => {
-      let timeout;
-      return (...args) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => fn(...args), delay);
-      };
-    };
-
+   
     async function fetchCities(query) {
-      try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&accept-language=uk&q=${encodeURIComponent(query)}&countrycodes=ua&limit=10`);
-        const data = await res.json();
-        return data.filter(item => item.type === 'city' || item.type === 'town' || item.type === 'village')
-                   .map(item => ({
-                     name: `${item.address.city || item.address.town || item.address.village || ''}, ${item.address.county || ''}, ${item.address.state || ''}`,
-                     lat: item.lat,
-                     lon: item.lon
-                   }));
-      } catch (e) {
-        console.error("City fetch error:", e);
-        return [];
-      }
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&accept-language=uk&q=${encodeURIComponent(query)}&countrycodes=ua&limit=10`);
+    const data = await res.json();
+    return data
+      .filter(item => item.type === 'city' || item.type === 'town' || item.type === 'village')
+      .map(item => {
+        const address = item.address;
+        const city = address.city || address.town || address.village || '';
+        const region = address.state || '';
+        const district = address.county || '';
+        const name = `${city}, ${district}, ${region}`;
+        return {
+          name,
+          lat: item.lat,
+          lon: item.lon
+        };
+      });
     }
 
-    function setupCityAutocomplete(inputId) {
+    function setupCityAutocomplete(inputId, suggestionsId) {
       const input = document.getElementById(inputId);
-      const suggestionsBox = document.createElement('div');
-      suggestionsBox.className = 'suggestion-list';
-      suggestionsBox.style.display = 'none';
-      document.body.appendChild(suggestionsBox);
-
-      input.addEventListener("input", debounce(async function () {
+      const suggestionsBox = document.getElementById(suggestionsId);
+    
+      input.addEventListener("input", async function () {
         const value = input.value.trim();
-        if (value.length < 3) return suggestionsBox.style.display = "none";
+        if (value.length < 3) {
+          suggestionsBox.innerHTML = "";
+          suggestionsBox.style.display = "none";
+          input.classList.remove("valid", "invalid");
+          return;
+        }
+    
         const suggestions = await fetchCities(value);
         suggestionsBox.innerHTML = "";
-        if (!suggestions.length) return input.classList.add("invalid");
-
+    
+        if (suggestions.length === 0) {
+          input.classList.add("invalid");
+          input.classList.remove("valid");
+          suggestionsBox.style.display = "none";
+          return;
+        }
+    
         suggestions.forEach(s => {
           const div = document.createElement("div");
           div.className = "suggestion-item";
@@ -267,19 +375,34 @@
           });
           suggestionsBox.appendChild(div);
         });
-
+    
         const rect = input.getBoundingClientRect();
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+    
         suggestionsBox.style.position = "absolute";
-        suggestionsBox.style.top = `${rect.bottom + window.scrollY}px`;
-        suggestionsBox.style.left = `${rect.left + window.scrollX}px`;
+        suggestionsBox.style.top = `${rect.bottom + scrollTop}px`;
+        suggestionsBox.style.left = `${rect.left + scrollLeft}px`;
         suggestionsBox.style.width = `${rect.width}px`;
         suggestionsBox.style.display = "block";
-      }, 400));
-
-      input.addEventListener("blur", () => setTimeout(() => suggestionsBox.style.display = "none", 200));
-    }
-
-    ["city_from", "city_to"].forEach(setupCityAutocomplete);
+      });
+    
+      input.addEventListener("blur", () => {
+        setTimeout(() => {
+          suggestionsBox.style.display = "none";
+        }, 200);
+      });
+    
+      input.addEventListener("focus", () => {
+        if (input.value.length >= 3) {
+          input.dispatchEvent(new Event("input"));
+        }
+      });
+        
+        setupCityAutocomplete("city_from", "suggestions_city_from");
+        setupCityAutocomplete("city_to", "suggestions_city_to");
+      };
   </script>
 </body>
 </html>
+
