@@ -27,7 +27,7 @@
       border: 1px solid #CCD1D9; border-radius: 10px;
       background-color: #fff; width: 100%;
       box-sizing: border-box; margin-bottom: 24px;
-      max-width: 600px;
+      max-width: 100%;
     }
     button, .location-btn {
       padding: 14px; background-color: #007AFF;
@@ -275,7 +275,8 @@
         suggestionsBox.style.left = `${rect.left + window.scrollX}px`;
         suggestionsBox.style.width = `${rect.width}px`;
         suggestionsBox.style.display = 'block';
-        document.body.appendChild(suggestionsBox);
+        // ensure it's inside the right container
+        input.parentElement.appendChild(suggestionsBox);
       });
 
       input.addEventListener("input", showSuggestions);
