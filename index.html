@@ -26,7 +26,7 @@
       padding: 14px; font-size: 16px;
       border: 1px solid #CCD1D9; border-radius: 10px;
       background-color: #fff;
-      width: 100%; max-width: none;
+      width: 100vw; max-width: 100%;
       box-sizing: border-box; margin-bottom: 24px;
     }
     button, .location-btn {
@@ -58,7 +58,7 @@
 </head>
 <body>
   <h2>🚚 Заявка на переїзд</h2>
-  <form id="moveForm">
+  <form id="moveForm" style="max-width: 100%; width: 100%;">
     <div class="block">
       <label>🌆 Місто відправлення</label>
       <div style="position: relative;">
@@ -232,7 +232,7 @@
     };
 
     async function fetchCities(query) {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&accept-language=uk&q=${encodeURIComponent(query)}&countrycodes=ua&limit=10`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&accept-language=uk&countrycodes=ua&addressdetails=1&limit=10`);
       const data = await res.json();
       return data.filter(item => ['city','town','village'].includes(item.type)).map(item => {
         const a = item.address;
@@ -240,36 +240,57 @@
       });
     }
 
-    function setupCityAutocomplete(inputId, suggestionsId) {
-      const input = document.getElementById(inputId);
-      const suggestionsBox = document.getElementById(suggestionsId);
+    const cityInputs = [
+  { inputId: 'city_from', latId: 'from_lat', lngId: 'from_lng' },
+  { inputId: 'city_to', latId: 'to_lat', lngId: 'to_lng' }
+];
 
-      const showSuggestions = debounce(async () => {
-        const value = input.value.trim();
-        if (value.length < 3) return suggestionsBox.style.display = 'none';
-        let results = [];
-        try {
-          results = await fetchCities(value);
-        } catch (e) {
-          console.error('Autocomplete fetch error:', e);
-        }
-        suggestionsBox.innerHTML = "";
+cityInputs.forEach(({ inputId, latId, lngId }) => {
+  const input = document.getElementById(inputId);
+  const suggestionsBox = document.getElementById(`suggestions_${inputId}`);
+  let suggestions = [];
+  let timer;
 
-        if (!results.length) {
-          input.classList.add("invalid");
-          input.classList.remove("valid");
-          suggestionsBox.style.display = 'none';
-          return;
-        }
+  input.addEventListener('input', () => {
+    const value = input.value.trim();
+    clearTimeout(timer);
 
-        results.forEach(item => {
-          const div = document.createElement("div");
-          div.className = "suggestion-item";
-          div.textContent = item.name;
-          div.addEventListener("mousedown", () => {
-            input.value = item.name;
-            input.classList.add("valid");
-            input.classList.remove("invalid");
+    if (value.length < 3) {
+      suggestionsBox.style.display = 'none';
+      input.classList.remove('valid', 'invalid');
+      return;
+    }
+
+    timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&accept-language=uk&countrycodes=ua&limit=5&q=${encodeURIComponent(value)}`);
+        const data = await res.json();
+
+        suggestions = data.map(place => {
+          const { address } = place;
+          const city = address.city || address.town || address.village || place.display_name.split(',')[0];
+          const region = address.state || address.region || '';
+          return {
+            name: `${city}, ${region}`,
+            lat: place.lat,
+            lon: place.lon
+          };
+        });
+
+        suggestionsBox.innerHTML = '';
+        suggestions.forEach(({ name }) => {
+          const div = document.createElement('div');
+          div.className = 'suggestion-item';
+          div.textContent = name;
+          div.addEventListener('mousedown', () => {
+            input.value = name;
+            const matched = suggestions.find(s => s.name === name);
+            if (matched) {
+              document.getElementById(latId).value = matched.lat;
+              document.getElementById(lngId).value = matched.lon;
+              input.classList.add('valid');
+              input.classList.remove('invalid');
+            }
             suggestionsBox.style.display = 'none';
           });
           suggestionsBox.appendChild(div);
@@ -280,16 +301,17 @@
         suggestionsBox.style.left = `${rect.left + window.scrollX}px`;
         suggestionsBox.style.width = `${rect.width}px`;
         suggestionsBox.style.display = 'block';
-        // ensure it's inside the right container
         input.parentElement.appendChild(suggestionsBox);
-      });
 
-      input.addEventListener("input", showSuggestions);
-      input.addEventListener("blur", () => setTimeout(() => suggestionsBox.style.display = 'none', 200));
-    }
+      } catch (e) {
+        console.error("Autocomplete fetch error:", e);
+        suggestionsBox.style.display = 'none';
+      }
+    }, 500);
+  });
 
-    setupCityAutocomplete("city_from", "suggestions_city_from");
-    setupCityAutocomplete("city_to", "suggestions_city_to");
+  input.addEventListener('blur', () => setTimeout(() => suggestionsBox.style.display = 'none', 200));
+});
   </script>
 </body>
 </html>
