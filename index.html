@@ -327,7 +327,7 @@ cityInputs.forEach(({ inputId, latId, lngId }) => {
         suggestionsBox.style.top = `${inputRect.bottom + scrollY}px`;
         suggestionsBox.style.left = `${inputRect.left}px`;
         suggestionsBox.style.width = `${inputRect.width}px`;
-        document.body.appendChild(suggestionsBox);
+        suggestionsBox.style.display = 'block';
 
       } catch (e) {
         console.error("Autocomplete fetch error:", e);
