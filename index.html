@@ -56,18 +56,122 @@
   </style>
 </head>
 <body>
-  <!-- Залишаємо HTML форму БЕЗ змін -->
+  <h2>🚚 Заявка на переїзд</h2>
+  <form id="moveForm">
+    <div class="block">
+      <label>🌆 Місто відправлення</label>
+      <div style="position: relative;">
+        <input type="text" id="city_from" placeholder="Наприклад, Київ" autocomplete="off" required />
+        <div id="suggestions_city_from" class="suggestion-list" style="display: none;"></div>
+      </div>
 
-  <!-- ...весь ваш HTML без змін... -->
+      <label>📍 Адреса відправлення</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="from" placeholder="вул. Хрещатик, 1" required />
+        <button type="button" class="location-btn" onclick="openMap('from')">📍</button>
+      </div>
+      <input type="hidden" id="from_lat">
+      <input type="hidden" id="from_lng">
+
+      <label>🌆 Місто доставки</label>
+      <div style="position: relative;">
+        <input type="text" id="city_to" placeholder="Наприклад, Львів" autocomplete="off" required />
+        <div id="suggestions_city_to" class="suggestion-list" style="display: none;"></div>
+      </div>
+
+      <label>🟢 Адреса доставки</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="to" placeholder="вул. Городоцька, 15" required />
+        <button type="button" class="location-btn" onclick="openMap('to')">📍</button>
+      </div>
+      <input type="hidden" id="to_lat">
+      <input type="hidden" id="to_lng">
+    </div>
+
+    <div class="block">
+      <label>📅 Дата відправки</label>
+      <input type="date" id="date" required />
+
+      <label>🕒 Часовий проміжок</label>
+      <select id="time" required>
+        <option value="">Оберіть проміжок</option>
+        <option value="До 9:00">До 9:00</option>
+        <option value="09:00 - 12:00">09:00 - 12:00</option>
+        <option value="12:00 - 15:00">12:00 - 15:00</option>
+        <option value="15:00 - 18:00">15:00 - 18:00</option>
+        <option value="Після 18:00">Після 18:00</option>
+      </select>
+    </div>
+
+    <div class="block">
+      <label>📦 Що перевозимо?</label>
+      <input type="text" id="cargo" placeholder="Меблі, техніка, коробки..." required />
+
+      <label>⚖️ Орієнтовна вага (кг)</label>
+      <input type="number" id="weight" placeholder="Наприклад, 120" step="0.01" min="0" />
+
+      <label>📐 Габарити вантажу</label>
+      <div class="row">
+        <div><input type="number" id="length" placeholder="Довжина (м)" step="0.01" min="0" /></div>
+        <div><input type="number" id="width" placeholder="Ширина (м)" step="0.01" min="0" /></div>
+        <div><input type="number" id="height" placeholder="Висота (м)" step="0.01" min="0" /></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <label>🚛 Оберіть тип авто</label>
+      <select id="vehicle_type" required>
+        <option value="">Оберіть тип авто</option>
+        <option value="500 кг / 2 м³">500 кг / 2 м³</option>
+        <option value="1 т / 9 м³">1 т / 9 м³</option>
+        <option value="2 т / 12 м³">2 т / 12 м³</option>
+        <option value="5 т / 20 м³">5 т / 20 м³</option>
+        <option value="10 т / 35 м³">10 т / 35 м³</option>
+        <option value="20 т / 45+ м³">20 т / 45+ м³</option>
+      </select>
+
+      <label>🧍 Потрібні вантажники?</label>
+      <select id="loaders">
+        <option value="Не потрібно">Не потрібно</option>
+        <option value="1 вантажник">1 вантажник</option>
+        <option value="2 вантажники">2 вантажники</option>
+        <option value="3 вантажники">3 вантажники</option>
+        <option value="4+ вантажники">4+ вантажники</option>
+      </select>
+
+      <label>🏢 Ліфт у будівлі</label>
+      <select id="elevator">
+        <option value="Не вказано">Не вказано</option>
+        <option value="Є ліфт">Є ліфт</option>
+        <option value="Немає ліфта">Немає ліфта</option>
+      </select>
+    </div>
+
+    <div class="block">
+      <label>📞 Контактний номер телефону</label>
+      <input type="tel" id="phone" placeholder="380XXXXXXXXX" pattern="[0-9]{10,15}" required />
+
+      <label>📝 Коментар до замовлення</label>
+      <textarea id="comment" placeholder="Поверх, додаткові умови, інше..."></textarea>
+    </div>
+
+    <button type="submit">✅ Надіслати заявку</button>
+  </form>
+
+  <div id="mapModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:1000;">
+    <div id="map" style="height: 90%; width: 100%;"></div>
+    <button onclick="closeMap()" style="width: 100%; padding: 16px; background-color: #007AFF; color: white; border: none;">✅ Обрати точку</button>
+  </div>
 
   <script>
+    // Оптимізований JS
     const tg = window.Telegram.WebApp;
     tg.expand();
 
     const form = document.getElementById("moveForm");
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
-      const ids = ["city_from","from","city_to","to","from_lat","from_lng","to_lat","to_lng","date","time","cargo","weight","length","width","height","vehicle_type","loaders","elevator","phone","comment"];
+      const ids = ["city_from", "from", "city_to", "to", "from_lat", "from_lng", "to_lat", "to_lng", "date", "time", "cargo", "weight", "length", "width", "height", "vehicle_type", "loaders", "elevator", "phone", "comment"];
       const data = Object.fromEntries(ids.map(id => [id, document.getElementById(id)?.value || ""]));
       data.telegram_id = tg.initDataUnsafe?.user?.id || null;
       data.username = tg.initDataUnsafe?.user?.username || null;
