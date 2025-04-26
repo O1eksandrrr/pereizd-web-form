@@ -97,21 +97,23 @@
     input.invalid {
       border-color: #e74c3c !important; /* Червона рамка */
     }
-    .suggestion-list {
+   .suggestion-list {
       position: absolute;
       background-color: #fff;
       border: 1px solid #ddd;
       border-radius: 4px;
-      max-height: 200px;
+      max-height: 250px;
       overflow-y: auto;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       z-index: 9999;
     }
     .suggestion-item {
-      padding: 10px;
+      padding: 10px 14px;
       cursor: pointer;
+      font-size: 15px;
     }
     .suggestion-item:hover {
-      background-color: #f0f0f0;
+      background-color: #f5f5f5;
     }
   </style>
 </head>
@@ -320,15 +322,24 @@
     }
    
     async function fetchCities(query) {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&accept-language=uk&q=${encodeURIComponent(query)}&countrycodes=ua&limit=5`);
-      const data = await res.json();
-      return data.map(item => ({
-        name: item.display_name,
-        lat: item.lat,
-        lon: item.lon
-      }));
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&accept-language=uk&q=${encodeURIComponent(query)}&countrycodes=ua&limit=10`);
+    const data = await res.json();
+    return data
+      .filter(item => item.type === 'city' || item.type === 'town' || item.type === 'village')
+      .map(item => {
+        const address = item.address;
+        const city = address.city || address.town || address.village || '';
+        const region = address.state || '';
+        const district = address.county || '';
+        const name = `${city}, ${district}, ${region}`;
+        return {
+          name,
+          lat: item.lat,
+          lon: item.lon
+        };
+      });
     }
-    
+
     function setupCityAutocomplete(inputId, suggestionsId) {
       const input = document.getElementById(inputId);
       const suggestionsBox = document.getElementById(suggestionsId);
@@ -336,13 +347,17 @@
       input.addEventListener("input", async function () {
         const value = input.value.trim();
         if (value.length < 3) {
+          suggestionsBox.innerHTML = "";
           suggestionsBox.style.display = "none";
+          input.classList.remove("valid", "invalid");
           return;
         }
     
         const suggestions = await fetchCities(value);
         suggestionsBox.innerHTML = "";
         if (suggestions.length === 0) {
+          input.classList.add("invalid");
+          input.classList.remove("valid");
           suggestionsBox.style.display = "none";
           return;
         }
@@ -351,7 +366,7 @@
           const div = document.createElement("div");
           div.className = "suggestion-item";
           div.textContent = s.name;
-          div.addEventListener("click", () => {
+          div.addEventListener("mousedown", () => {
             input.value = s.name;
             input.classList.add("valid");
             input.classList.remove("invalid");
@@ -359,24 +374,29 @@
           });
           suggestionsBox.appendChild(div);
         });
+    
+        const rect = input.getBoundingClientRect();
+        suggestionsBox.style.top = `${input.offsetTop + input.offsetHeight}px`;
+        suggestionsBox.style.left = `${input.offsetLeft}px`;
+        suggestionsBox.style.width = `${input.offsetWidth}px`;
         suggestionsBox.style.display = "block";
       });
-    
+
       input.addEventListener("blur", () => {
         setTimeout(() => {
           suggestionsBox.style.display = "none";
-        }, 150);
+        }, 100);
       });
     
       input.addEventListener("focus", () => {
         if (input.value.length >= 3) {
           input.dispatchEvent(new Event("input"));
-        }
-      });
-    }
-    
-    setupCityAutocomplete("city_from", "suggestions_city_from");
-    setupCityAutocomplete("city_to", "suggestions_city_to");
+          }
+        });
+      }
+        
+      setupCityAutocomplete("city_from", "suggestions_city_from");
+      setupCityAutocomplete("city_to", "suggestions_city_to");
 </script>
   </script>
 </body>
