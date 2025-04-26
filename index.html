@@ -19,15 +19,21 @@
       color: #2C3E50;
     }
     h2 { margin-bottom: 20px; font-weight: 600; color: #007AFF; }
-    form { display: flex; flex-direction: column; gap: 24px; }
+    form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-left: 5vw;
+  padding-right: 5vw;
+}
     .block { margin-top: 16px; border-bottom: 1px solid #E0E0E0; padding-bottom: 20px; }
     label { font-weight: 500; margin-bottom: 6px; display: block; }
     input, textarea, select {
       padding: 14px; font-size: 16px;
       border: 1px solid #CCD1D9; border-radius: 10px;
       background-color: #fff;
-      width: 100vw; max-width: 100%;
       box-sizing: border-box; margin-bottom: 24px;
+      width: 100%;
     }
     button, .location-btn {
       padding: 14px; background-color: #007AFF;
@@ -71,7 +77,7 @@
     <div class="block">
       <label>🌆 Місто відправлення</label>
       <div style="position: relative;">
-        <input type="text" id="city_from" placeholder="Наприклад, Київ" autocomplete="off" required />
+        <input type="text" style="width: 100%;"$1id="$2" placeholder="Наприклад, Київ" autocomplete="off" required />
         <div id="suggestions_city_from" class="suggestion-list" style="display: none;"></div>
       </div>
 
@@ -103,7 +109,7 @@
       <input type="date" id="date" required />
 
       <label>🕒 Часовий проміжок</label>
-      <select id="time" required>
+      <select style="width: 100%;"$1id="$2" required>
         <option value="">Оберіть проміжок</option>
         <option value="До 9:00">До 9:00</option>
         <option value="09:00 - 12:00">09:00 - 12:00</option>
@@ -162,7 +168,7 @@
       <input type="tel" id="phone" placeholder="380XXXXXXXXX" pattern="[0-9]{10,15}" required />
 
       <label>📝 Коментар до замовлення</label>
-      <textarea id="comment" placeholder="Поверх, додаткові умови, інше..."></textarea>
+      <textarea style="width: 100%;"$1id="$2" placeholder="Поверх, додаткові умови, інше..."></textarea>
     </div>
 
     <button type="submit">✅ Надіслати заявку</button>
