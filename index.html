@@ -17,30 +17,18 @@
     setTimeout(() => { toast.style.display = 'none'; }, 400);
   }, 3000);
 }
-function toggleTheme() {
-  const html = document.documentElement;
-  const current = html.dataset.theme;
-  const next = current === 'dark' ? 'light' : 'dark';
-  html.dataset.theme = next;
-  localStorage.setItem('theme', next);
-  applyTheme();
+
 }
 
-function applyTheme() {
-  const theme = localStorage.getItem('theme');
-  if (theme) document.documentElement.dataset.theme = theme;
-}
 
-applyTheme();
+
+
 
 });
 </script>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <style>
-    [data-theme="dark"] body {
-      background-color: #1E1E1E;
-      color: #F0F0F0;
-    }
+    
     [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
       background-color: #2A2A2A;
       color: #F0F0F0;
@@ -60,14 +48,8 @@ applyTheme();
     [data-theme="dark"] button:hover, [data-theme="dark"] .location-btn:hover {
       background-color: #1E90FF;
     }
-    :root {
-      color-scheme: light dark;
-    }
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #1E1E1E;
-        color: #F0F0F0;
-      }
+    
+    
       input, textarea, select {
         background-color: #2A2A2A;
         color: #F0F0F0;
@@ -157,9 +139,7 @@ applyTheme();
 </head>
 <body>
   <div style="text-align: right; margin-bottom: 12px;">
-  <button onclick="toggleTheme()" style="padding: 6px 12px; font-size: 14px; border-radius: 6px; background-color: #444; color: white; border: none; cursor: pointer;">
-    🌓 Змінити тему
-  </button>
+  
 </div>
 $1
   <form id="moveForm" style="max-width: 100%; width: 100%;">
