@@ -1,14 +1,15 @@
 <!DOCTYPE html>
+
 <html lang="uk">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Заявка на переїзд</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Заявка на переїзд</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://unpkg.com/leaflet/dist/leaflet.css" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<style>
     html, body {
       height: 100%;
       overflow-y: auto;
@@ -75,110 +76,96 @@
     }
     .suggestion-item:hover { background-color: #f5f5f5; }
   </style>
-</head>
+</link></head>
 <body>
-  <h2>🚚 Заявка на переїзд</h2>
-  <form id="moveForm" style="max-width: 100%; width: 100%;">
-    <div class="block">
-      <label>🌆 Місто відправлення</label>
-      <div style="position: relative;">
-        <input type="text" id="city_from" style="width: 100%;" placeholder="Наприклад, Київ" autocomplete="off" required />
-        <div id="suggestions_city_from" class="suggestion-list" style="display: none;"></div>
-      </div>
-
-      <label>📍 Адреса відправлення</label>
-      <div style="display: flex; gap: 8px;">
-        <input type="text" id="from" placeholder="вул. Хрещатик, 1" required />
-        <button type="button" class="location-btn" onclick="openMap('from')">📍</button>
-      </div>
-      <input type="hidden" id="from_lat">
-      <input type="hidden" id="from_lng">
-
-      <label>🌆 Місто доставки</label>
-      <div style="position: relative;">
-        <input type="text" id="city_to" placeholder="Наприклад, Львів" autocomplete="off" required />
-        <div id="suggestions_city_to" class="suggestion-list" style="display: none;"></div>
-      </div>
-
-      <label>🟢 Адреса доставки</label>
-      <div style="display: flex; gap: 8px;">
-        <input type="text" id="to" placeholder="вул. Городоцька, 15" required />
-        <button type="button" class="location-btn" onclick="openMap('to')">📍</button>
-      </div>
-      <input type="hidden" id="to_lat">
-      <input type="hidden" id="to_lng">
-    </div>
-
-    <div class="block">
-      <label>📅 Дата відправки</label>
-      <input type="date" id="date" required />
-
-      <label>🕒 Часовий проміжок</label>
-      <select id="time" style="width: 100%;" required>
-        <option value="">Оберіть проміжок</option>
-        <option value="До 9:00">До 9:00</option>
-        <option value="09:00 - 12:00">09:00 - 12:00</option>
-        <option value="12:00 - 15:00">12:00 - 15:00</option>
-        <option value="15:00 - 18:00">15:00 - 18:00</option>
-        <option value="Після 18:00">Після 18:00</option>
-      </select>
-    </div>
-
-    <div class="block">
-      <label>📦 Що перевозимо?</label>
-      <input type="text" id="cargo" placeholder="Меблі, техніка, коробки..." required />
-
-      <label>⚖️ Орієнтовна вага (кг)</label>
-      <input type="number" id="weight" placeholder="Наприклад, 120" step="0.01" min="0" />
-
-      <label>📐 Габарити вантажу</label>
-      <div class="row">
-  <div><input type="number" id="length" placeholder="Довжина (м)" step="0.01" min="0" style="width: 100%;" /></div>
-  <div><input type="number" id="width" placeholder="Ширина (м)" step="0.01" min="0" style="width: 100%;" /></div>
-  <div><input type="number" id="height" placeholder="Висота (м)" step="0.01" min="0" style="width: 100%;" /></div>
+<h2>🚚 Заявка на переїзд</h2>
+<form id="moveForm" style="max-width: 100%; width: 100%;">
+<div class="block">
+<label>🌆 Місто відправлення</label>
+<div style="position: relative;">
+<input autocomplete="off" id="city_from" placeholder="Наприклад, Київ" required="" style="width: 100%;" type="text"/>
+<div class="suggestion-list" id="suggestions_city_from" style="display: none;"></div>
 </div>
-    </div>
-
-    <div class="block">
-      <label>🚛 Оберіть тип авто</label>
-      <select id="vehicle_type" required>
-        <option value="">Оберіть тип авто</option>
-        <option value="500 кг / 2 м³">500 кг / 2 м³</option>
-        <option value="1 т / 9 м³">1 т / 9 м³</option>
-        <option value="2 т / 12 м³">2 т / 12 м³</option>
-        <option value="5 т / 20 м³">5 т / 20 м³</option>
-        <option value="10 т / 35 м³">10 т / 35 м³</option>
-        <option value="20 т / 45+ м³">20 т / 45+ м³</option>
-      </select>
-
-      <label>🧍 Потрібні вантажники?</label>
-      <select id="loaders">
-        <option value="Не потрібно">Не потрібно</option>
-        <option value="1 вантажник">1 вантажник</option>
-        <option value="2 вантажники">2 вантажники</option>
-        <option value="3 вантажники">3 вантажники</option>
-        <option value="4+ вантажники">4+ вантажники</option>
-      </select>
-
-      <label>🏢 Ліфт у будівлі</label>
-      <select id="elevator">
-        <option value="Не вказано">Не вказано</option>
-        <option value="Є ліфт">Є ліфт</option>
-        <option value="Немає ліфта">Немає ліфта</option>
-      </select>
-    </div>
-
-    <div class="block">
-      <label>📞 Контактний номер телефону</label>
-      <input type="tel" id="phone" placeholder="380XXXXXXXXX" pattern="[0-9]{10,15}" required />
-
-      <label>📝 Коментар до замовлення</label>
-      <textarea id="comment" style="width: 100%;" placeholder="Поверх, додаткові умови, інше..."></textarea>
-    </div>
-
-    <button type="submit">✅ Надіслати заявку</button>
-  </form>
-  <div id="toast" style="
+<label>📍 Адреса відправлення</label>
+<div style="display: flex; gap: 8px;">
+<input id="from" placeholder="вул. Хрещатик, 1" required="" type="text"/>
+<button class="location-btn" onclick="openMap('from')" type="button">📍</button>
+</div>
+<input id="from_lat" type="hidden"/>
+<input id="from_lng" type="hidden"/>
+<label>🌆 Місто доставки</label>
+<div style="position: relative;">
+<input autocomplete="off" id="city_to" placeholder="Наприклад, Львів" required="" type="text">
+<div class="suggestion-list" id="suggestions_city_to" style="display: none;"></div>
+</input></div>
+<label>🟢 Адреса доставки</label>
+<div style="display: flex; gap: 8px;">
+<input id="to" placeholder="вул. Городоцька, 15" required="" type="text">
+<button class="location-btn" onclick="openMap('to')" type="button">📍</button>
+</input></div>
+<input id="to_lat" type="hidden"/>
+<input id="to_lng" type="hidden"/>
+</div>
+<div class="block">
+<label>📅 Дата відправки</label>
+<input id="date" required="" type="date">
+<label>🕒 Часовий проміжок</label>
+<select id="time" required="" style="width: 100%;">
+<option value="">Оберіть проміжок</option>
+<option value="До 9:00">До 9:00</option>
+<option value="09:00 - 12:00">09:00 - 12:00</option>
+<option value="12:00 - 15:00">12:00 - 15:00</option>
+<option value="15:00 - 18:00">15:00 - 18:00</option>
+<option value="Після 18:00">Після 18:00</option>
+</select>
+</input></div>
+<div class="block">
+<label>📦 Що перевозимо?</label>
+<input id="cargo" placeholder="Меблі, техніка, коробки..." required="" type="text">
+<label>⚖️ Орієнтовна вага (кг)</label>
+<input id="weight" min="0" placeholder="Наприклад, 120" step="0.01" type="number"/>
+<label>📐 Габарити вантажу</label>
+<div class="row">
+<div><input id="length" min="0" placeholder="Довжина (м)" step="0.01" style="width: 100%;" type="number"/></div>
+<div><input id="width" min="0" placeholder="Ширина (м)" step="0.01" style="width: 100%;" type="number"/></div>
+<div><input id="height" min="0" placeholder="Висота (м)" step="0.01" style="width: 100%;" type="number"/></div>
+</div>
+</input></div>
+<div class="block">
+<label>🚛 Оберіть тип авто</label>
+<select id="vehicle_type" required="">
+<option value="">Оберіть тип авто</option>
+<option value="500 кг / 2 м³">500 кг / 2 м³</option>
+<option value="1 т / 9 м³">1 т / 9 м³</option>
+<option value="2 т / 12 м³">2 т / 12 м³</option>
+<option value="5 т / 20 м³">5 т / 20 м³</option>
+<option value="10 т / 35 м³">10 т / 35 м³</option>
+<option value="20 т / 45+ м³">20 т / 45+ м³</option>
+</select>
+<label>🧍 Потрібні вантажники?</label>
+<select id="loaders">
+<option value="Не потрібно">Не потрібно</option>
+<option value="1 вантажник">1 вантажник</option>
+<option value="2 вантажники">2 вантажники</option>
+<option value="3 вантажники">3 вантажники</option>
+<option value="4+ вантажники">4+ вантажники</option>
+</select>
+<label>🏢 Ліфт у будівлі</label>
+<select id="elevator">
+<option value="Не вказано">Не вказано</option>
+<option value="Є ліфт">Є ліфт</option>
+<option value="Немає ліфта">Немає ліфта</option>
+</select>
+</div>
+<div class="block">
+<label>📞 Контактний номер телефону</label>
+<input id="phone" pattern="[0-9]{10,15}" placeholder="380XXXXXXXXX" required="" type="tel"/>
+<label>📝 Коментар до замовлення</label>
+<textarea id="comment" placeholder="Поверх, додаткові умови, інше..." style="width: 100%;"></textarea>
+</div>
+<button type="submit">✅ Надіслати заявку</button>
+</form>
+<div id="toast" style="
     visibility: hidden;
     min-width: 250px;
     background-color: #28a745;
@@ -195,13 +182,11 @@
   ">
     Заявку надіслано успішно!
   </div>
-
-  <div id="mapModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:1000;">
-    <div id="map" style="height: 90%; width: 100%;"></div>
-    <button onclick="closeMap()" style="width: 100%; padding: 16px; background-color: #007AFF; color: white; border: none;">✅ Обрати точку</button>
-  </div>
-
-  <script>
+<div id="mapModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:1000;">
+<div id="map" style="height: 90%; width: 100%;"></div>
+<button onclick="closeMap()" style="width: 100%; padding: 16px; background-color: #007AFF; color: white; border: none;">✅ Обрати точку</button>
+</div>
+<script>
     // Оптимізований JS
     const tg = window.Telegram.WebApp;
     tg.expand();
@@ -246,17 +231,57 @@ async function fetchCoordsFromAddress(address) {
   return null;
 }
     function openMap(fieldId) {
-      activeField = fieldId;
-      document.getElementById('mapModal').style.display = 'block';
-      setTimeout(() => {
-        if (!map) {
-          map = L.map('map').setView([50.4501, 30.5234], 13);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-          }).addTo(map);
+  activeField = fieldId;
+  document.getElementById('mapModal').style.display = 'block';
+  setTimeout(async () => {
+    if (!map) {
+      map = L.map('map').setView([50.4501, 30.5234], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+    }
+
+    let centerLat = 50.4501, centerLng = 30.5234;
+
+    if (fieldId === 'from') {
+      const city = document.getElementById('city_from').value;
+      if (city.length > 2) {
+        const coords = await fetchCoordsFromAddress(city);
+        if (coords) {
+          centerLat = coords.lat;
+          centerLng = coords.lng;
         }
-        map.off('click');
-        map.on('click', function (e) {
+      }
+    } else if (fieldId === 'to') {
+      const address = document.getElementById('to').value;
+      if (address.length > 2) {
+        const coords = await fetchCoordsFromAddress(address);
+        if (coords) {
+          centerLat = coords.lat;
+          centerLng = coords.lng;
+        }
+      }
+    }
+
+    map.setView([centerLat, centerLng], 14);
+
+    map.off('click');
+    map.on('click', function (e) {
+      const { lat, lng } = e.latlng;
+      if (selectedMarker) map.removeLayer(selectedMarker);
+      selectedMarker = L.marker([lat, lng]).addTo(map);
+      document.getElementById(`${activeField}_lat`).value = lat;
+      document.getElementById(`${activeField}_lng`).value = lng;
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=uk`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById(activeField).value = data.display_name || `${lat}, ${lng}`;
+        });
+    });
+
+    map.invalidateSize();
+  }, 200);
+}function (e) {
           const { lat, lng } = e.latlng;
           if (selectedMarker) map.removeLayer(selectedMarker);
           selectedMarker = L.marker([lat, lng]).addTo(map);
