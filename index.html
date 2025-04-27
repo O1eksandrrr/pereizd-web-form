@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Заявка на переїзд</title>
+  <title>Pereizd</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://telegram.org/js/telegram-web-app.js">function showToast(message) {
@@ -17,9 +17,75 @@
     setTimeout(() => { toast.style.display = 'none'; }, 400);
   }, 3000);
 }
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.dataset.theme;
+  const next = current === 'dark' ? 'light' : 'dark';
+  html.dataset.theme = next;
+  localStorage.setItem('theme', next);
+  applyTheme();
+}
+
+function applyTheme() {
+  const theme = localStorage.getItem('theme');
+  if (theme) document.documentElement.dataset.theme = theme;
+}
+
+applyTheme();
 </script>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <style>
+    [data-theme="dark"] body {
+      background-color: #1E1E1E;
+      color: #F0F0F0;
+    }
+    [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+      background-color: #2A2A2A;
+      color: #F0F0F0;
+      border-color: #555;
+    }
+    [data-theme="dark"] .suggestion-list {
+      background-color: #2A2A2A;
+      color: white;
+      border-color: #444;
+    }
+    [data-theme="dark"] .suggestion-item:hover {
+      background-color: #333;
+    }
+    [data-theme="dark"] button, [data-theme="dark"] .location-btn {
+      background-color: #3399FF;
+    }
+    [data-theme="dark"] button:hover, [data-theme="dark"] .location-btn:hover {
+      background-color: #1E90FF;
+    }
+    :root {
+      color-scheme: light dark;
+    }
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #1E1E1E;
+        color: #F0F0F0;
+      }
+      input, textarea, select {
+        background-color: #2A2A2A;
+        color: #F0F0F0;
+        border-color: #555;
+      }
+      .suggestion-list {
+        background-color: #2A2A2A;
+        color: white;
+        border-color: #444;
+      }
+      .suggestion-item:hover {
+        background-color: #333;
+      }
+      button, .location-btn {
+        background-color: #3399FF;
+      }
+      button:hover, .location-btn:hover {
+        background-color: #1E90FF;
+      }
+    }
     html, body {
       height: 100%;
       overflow-y: auto;
@@ -88,7 +154,12 @@
   </style>
 </head>
 <body>
-  <h2>🚚 Заявка на переїзд</h2>
+  <div style="text-align: right; margin-bottom: 12px;">
+  <button onclick="toggleTheme()" style="padding: 6px 12px; font-size: 14px; border-radius: 6px; background-color: #444; color: white; border: none; cursor: pointer;">
+    🌓 Змінити тему
+  </button>
+</div>
+$1
   <form id="moveForm" style="max-width: 100%; width: 100%;">
     <div class="block">
       <label>🌆 Місто відправлення</label>
