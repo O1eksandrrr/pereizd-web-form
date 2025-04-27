@@ -6,70 +6,211 @@
   <title>Pereizd</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://telegram.org/js/telegram-web-app.js">function showToast(message) {
-  const toast = document.getElementById('toast');
-  toast.textContent = message;
-  toast.style.display = 'block';
-  toast.style.opacity = '1';
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    setTimeout(() => { toast.style.display = 'none'; }, 400);
-  }, 3000);
-}
+<!-- Toast notification -->
+<div id="toast" style="
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #2ecc71;
+  color: white;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 99999;
+  transition: opacity 0.4s ease;
+">Заявку надіслано успішно!</div>
 
-}
+<!-- Форма для заповнення -->
+<form id="moveForm">
+  <div class="block">
+    <label for="city_from">🌆 Місто відправлення</label>
+    <div style="position: relative;">
+      <input type="text" id="city_from" placeholder="Наприклад, Київ" autocomplete="off" required />
+      <div id="suggestions_city_from" class="suggestion-list" style="display: none;"></div>
+    </div>
 
+    <label for="from">📍 Адреса відправлення</label>
+    <input type="text" id="from" placeholder="вул. Хрещатик, 1" required />
+    <input type="hidden" id="from_lat">
+    <input type="hidden" id="from_lng">
 
+    <label for="city_to">🌆 Місто доставки</label>
+    <div style="position: relative;">
+      <input type="text" id="city_to" placeholder="Наприклад, Львів" autocomplete="off" required />
+      <div id="suggestions_city_to" class="suggestion-list" style="display: none;"></div>
+    </div>
 
+    <label for="to">🟢 Адреса доставки</label>
+    <input type="text" id="to" placeholder="вул. Городоцька, 15" required />
+    <input type="hidden" id="to_lat">
+    <input type="hidden" id="to_lng">
+  </div>
 
+  <div class="block">
+    <label for="date">📅 Дата відправки</label>
+    <input type="date" id="date" required />
 
+    <label for="time">🕒 Часовий проміжок</label>
+    <select id="time" required>
+      <option value="">Оберіть проміжок</option>
+      <option value="До 9:00">До 9:00</option>
+      <option value="09:00 - 12:00">09:00 - 12:00</option>
+      <option value="12:00 - 15:00">12:00 - 15:00</option>
+      <option value="15:00 - 18:00">15:00 - 18:00</option>
+      <option value="Після 18:00">Після 18:00</option>
+    </select>
+  </div>
+
+  <div class="block">
+    <label for="cargo">📦 Що перевозимо?</label>
+    <input type="text" id="cargo" placeholder="Меблі, техніка, коробки..." required />
+
+    <label for="weight">⚖️ Орієнтовна вага (кг)</label>
+    <input type="number" id="weight" placeholder="Наприклад, 120" step="0.01" min="0" />
+
+    <label>📐 Габарити вантажу</label>
+    <div class="row">
+      <div><input type="number" id="length" placeholder="Довжина (м)" step="0.01" min="0" /></div>
+      <div><input type="number" id="width" placeholder="Ширина (м)" step="0.01" min="0" /></div>
+      <div><input type="number" id="height" placeholder="Висота (м)" step="0.01" min="0" /></div>
+    </div>
+  </div>
+
+  <div class="block">
+    <label for="vehicle_type">🚛 Оберіть тип авто</label>
+    <select id="vehicle_type" required>
+      <option value="">Оберіть тип авто</option>
+      <option value="500 кг / 2 м³">500 кг / 2 м³</option>
+      <option value="1 т / 9 м³">1 т / 9 м³</option>
+      <option value="2 т / 12 м³">2 т / 12 м³</option>
+      <option value="5 т / 20 м³">5 т / 20 м³</option>
+      <option value="10 т / 35 м³">10 т / 35 м³</option>
+      <option value="20 т / 45+ м³">20 т / 45+ м³</option>
+    </select>
+
+    <label for="loaders">🧍 Потрібні вантажники?</label>
+    <select id="loaders">
+      <option value="Не потрібно">Не потрібно</option>
+      <option value="1 вантажник">1 вантажник</option>
+      <option value="2 вантажники">2 вантажники</option>
+      <option value="3 вантажники">3 вантажники</option>
+      <option value="4+ вантажники">4+ вантажники</option>
+    </select>
+
+    <label for="elevator">🏢 Ліфт у будівлі</label>
+    <select id="elevator">
+      <option value="Не вказано">Не вказано</option>
+      <option value="Є ліфт">Є ліфт</option>
+      <option value="Немає ліфта">Немає ліфта</option>
+    </select>
+  </div>
+
+  <div class="block">
+    <label for="phone">📞 Контактний номер телефону</label>
+    <input type="tel" id="phone" placeholder="380XXXXXXXXX" pattern="[0-9]{10,15}" required />
+
+    <label for="comment">📝 Коментар до замовлення</label>
+    <textarea id="comment" placeholder="Поверх, додаткові умови, інше..."></textarea>
+  </div>
+
+  <button type="submit">✅ Надіслати заявку</button>
+</form>
+
+<!-- Loader spinner -->
+<div id="loader" style="
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255,255,255,0.8);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 99998;
+  font-size: 16px;
+">⏳ Надсилання...</div>
+
+<script>
+const form = document.getElementById("moveForm");
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const loader = document.getElementById("loader");
+  loader.style.display = "block";
+
+  const data = {
+    city_from: document.getElementById("city_from").value
+  };
+
+  try {
+    await fetch("https://example.com/api", {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    });
+    showToast("Заявку надіслано успішно!");
+  } catch (err) {
+    showToast("Помилка при надсиланні заявки");
+  } finally {
+    loader.style.display = "none";
+  }
 });
+
+function setupCityAutocomplete(inputId, suggestionsId) {
+  const input = document.getElementById(inputId);
+  const suggestionsBox = document.getElementById(suggestionsId);
+
+  input.addEventListener("input", debounce(async () => {
+    const value = input.value.trim();
+    if (value.length < 3) return suggestionsBox.style.display = 'none';
+
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(value)}&accept-language=uk&countrycodes=ua&limit=10`);
+    const data = await res.json();
+
+    suggestionsBox.innerHTML = "";
+    data.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "suggestion-item";
+      div.textContent = item.display_name;
+      div.addEventListener("mousedown", () => {
+        input.value = item.display_name;
+        suggestionsBox.style.display = 'none';
+      });
+      suggestionsBox.appendChild(div);
+    });
+
+    const rect = input.getBoundingClientRect();
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
+    suggestionsBox.style.top = `${rect.bottom + scrollY}px`;
+    suggestionsBox.style.left = `${rect.left}px`;
+    suggestionsBox.style.width = `${rect.width}px`;
+    suggestionsBox.style.display = 'block';
+    document.body.appendChild(suggestionsBox);
+  }, 400));
+
+  input.addEventListener("blur", () => setTimeout(() => suggestionsBox.style.display = 'none', 200));
+}
+
+function debounce(fn, delay) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), delay);
+  };
+}
+
+setupCityAutocomplete("city_from", "suggestions_city_from");
 </script>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <style>
-    
-    [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
-      background-color: #2A2A2A;
-      color: #F0F0F0;
-      border-color: #555;
-    }
-    [data-theme="dark"] .suggestion-list {
-      background-color: #2A2A2A;
-      color: white;
-      border-color: #444;
-    }
-    [data-theme="dark"] .suggestion-item:hover {
-      background-color: #333;
-    }
-    [data-theme="dark"] button, [data-theme="dark"] .location-btn {
-      background-color: #3399FF;
-    }
-    [data-theme="dark"] button:hover, [data-theme="dark"] .location-btn:hover {
-      background-color: #1E90FF;
-    }
-    
-    
-      input, textarea, select {
-        background-color: #2A2A2A;
-        color: #F0F0F0;
-        border-color: #555;
-      }
-      .suggestion-list {
-        background-color: #2A2A2A;
-        color: white;
-        border-color: #444;
-      }
-      .suggestion-item:hover {
-        background-color: #333;
-      }
-      button, .location-btn {
-        background-color: #3399FF;
-      }
-      button:hover, .location-btn:hover {
-        background-color: #1E90FF;
-      }
-    }
     html, body {
       height: 100%;
       overflow-y: auto;
@@ -79,7 +220,11 @@
       padding: 12px;
       color: #2C3E50;
     }
-    h2 { margin-bottom: 20px; font-weight: 600; color: #007AFF; }
+    h2 {
+      margin-bottom: 20px;
+      font-weight: 600;
+      color: #007AFF;
+    }
     form {
       display: flex;
       flex-direction: column;
@@ -94,32 +239,55 @@
       padding-bottom: 20px;
       width: 100%;
     }
-    label { font-weight: 500; margin-bottom: 6px; display: block; }
+    label {
+      font-weight: 500;
+      margin-bottom: 6px;
+      display: block;
+    }
     input, textarea, select {
-      padding: 14px; font-size: 16px;
-      border: 1px solid #CCD1D9; border-radius: 10px;
+      padding: 14px;
+      font-size: 16px;
+      border: 1px solid #CCD1D9;
+      border-radius: 10px;
       background-color: #fff;
       width: 100%;
-      box-sizing: border-box; margin-bottom: 24px;
+      box-sizing: border-box;
+      margin-bottom: 24px;
     }
     button, .location-btn {
-      padding: 14px; background-color: #007AFF;
-      color: white; border: none; border-radius: 8px;
-      font-size: 16px; font-weight: 500; cursor: pointer;
+      padding: 14px;
+      background-color: #007AFF;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
       transition: background-color 0.2s ease;
     }
-    button:hover, .location-btn:hover { background-color: #005FCC; }
-    .row { display: flex; gap: 10px; }
-    .row > div {
-  flex: 1 1 0;
-  min-width: 0;
-}
-    .location-btn {
-      height: 48px; display: flex;
-      align-items: center; justify-content: center;
+    button:hover, .location-btn:hover {
+      background-color: #005FCC;
     }
-    input.valid { border-color: #2ecc71 !important; }
-    input.invalid { border-color: #e74c3c !important; }
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+    .row > div {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    .location-btn {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    input.valid {
+      border-color: #2ecc71 !important;
+    }
+    input.invalid {
+      border-color: #e74c3c !important;
+    }
     .suggestion-list {
       position: absolute;
       background-color: #fff;
@@ -132,299 +300,27 @@
       width: 100%;
     }
     .suggestion-item {
-      padding: 10px 14px; cursor: pointer; font-size: 15px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 15px;
     }
-    .suggestion-item:hover { background-color: #f5f5f5; }
+    .suggestion-item:hover {
+      background-color: #f5f5f5;
+    }
   </style>
 </head>
 <body>
-  <div style="text-align: right; margin-bottom: 12px;">
-  
-</div>
-$1
-  <form id="moveForm" style="max-width: 100%; width: 100%;">
-    <div class="block">
-      <label>🌆 Місто відправлення</label>
-      <div style="position: relative;">
-        <input type="text" id="city_from" style="width: 100%;" placeholder="Наприклад, Київ" autocomplete="off" required />
-        <div id="suggestions_city_from" class="suggestion-list" style="display: none;"></div>
-      </div>
-
-      <label>📍 Адреса відправлення</label>
-      <div style="display: flex; gap: 8px;">
-        <input type="text" id="from" placeholder="вул. Хрещатик, 1" required />
-        <button type="button" class="location-btn" onclick="openMap('from')">📍</button>
-      </div>
-      <input type="hidden" id="from_lat">
-      <input type="hidden" id="from_lng">
-
-      <label>🌆 Місто доставки</label>
-      <div style="position: relative;">
-        <input type="text" id="city_to" placeholder="Наприклад, Львів" autocomplete="off" required />
-        <div id="suggestions_city_to" class="suggestion-list" style="display: none;"></div>
-      </div>
-
-      <label>🟢 Адреса доставки</label>
-      <div style="display: flex; gap: 8px;">
-        <input type="text" id="to" placeholder="вул. Городоцька, 15" required />
-        <button type="button" class="location-btn" onclick="openMap('to')">📍</button>
-      </div>
-      <input type="hidden" id="to_lat">
-      <input type="hidden" id="to_lng">
-    </div>
-
-    <div class="block">
-      <label>📅 Дата відправки</label>
-      <input type="date" id="date" required />
-
-      <label>🕒 Часовий проміжок</label>
-      <select style="width: 100%;"$1id="$2" required>
-        <option value="">Оберіть проміжок</option>
-        <option value="До 9:00">До 9:00</option>
-        <option value="09:00 - 12:00">09:00 - 12:00</option>
-        <option value="12:00 - 15:00">12:00 - 15:00</option>
-        <option value="15:00 - 18:00">15:00 - 18:00</option>
-        <option value="Після 18:00">Після 18:00</option>
-      </select>
-    </div>
-
-    <div class="block">
-      <label>📦 Що перевозимо?</label>
-      <input type="text" id="cargo" placeholder="Меблі, техніка, коробки..." required />
-
-      <label>⚖️ Орієнтовна вага (кг)</label>
-      <input type="number" id="weight" placeholder="Наприклад, 120" step="0.01" min="0" />
-
-      <label>📐 Габарити вантажу</label>
-      <div class="row">
-  <div><input type="number" id="length" placeholder="Довжина (м)" step="0.01" min="0" style="width: 100%;" /></div>
-  <div><input type="number" id="width" placeholder="Ширина (м)" step="0.01" min="0" style="width: 100%;" /></div>
-  <div><input type="number" id="height" placeholder="Висота (м)" step="0.01" min="0" style="width: 100%;" /></div>
-</div>
-    </div>
-
-    <div class="block">
-      <label>🚛 Оберіть тип авто</label>
-      <select id="vehicle_type" required>
-        <option value="">Оберіть тип авто</option>
-        <option value="500 кг / 2 м³">500 кг / 2 м³</option>
-        <option value="1 т / 9 м³">1 т / 9 м³</option>
-        <option value="2 т / 12 м³">2 т / 12 м³</option>
-        <option value="5 т / 20 м³">5 т / 20 м³</option>
-        <option value="10 т / 35 м³">10 т / 35 м³</option>
-        <option value="20 т / 45+ м³">20 т / 45+ м³</option>
-      </select>
-
-      <label>🧍 Потрібні вантажники?</label>
-      <select id="loaders">
-        <option value="Не потрібно">Не потрібно</option>
-        <option value="1 вантажник">1 вантажник</option>
-        <option value="2 вантажники">2 вантажники</option>
-        <option value="3 вантажники">3 вантажники</option>
-        <option value="4+ вантажники">4+ вантажники</option>
-      </select>
-
-      <label>🏢 Ліфт у будівлі</label>
-      <select id="elevator">
-        <option value="Не вказано">Не вказано</option>
-        <option value="Є ліфт">Є ліфт</option>
-        <option value="Немає ліфта">Немає ліфта</option>
-      </select>
-    </div>
-
-    <div class="block">
-      <label>📞 Контактний номер телефону</label>
-      <input type="tel" id="phone" placeholder="380XXXXXXXXX" pattern="[0-9]{10,15}" required />
-
-      <label>📝 Коментар до замовлення</label>
-      <textarea style="width: 100%;"$1id="$2" placeholder="Поверх, додаткові умови, інше..."></textarea>
-    </div>
-
-    <button type="submit">✅ Надіслати заявку</button>
-  </form>
-
-  
-
-  <div id="toast" style="
-    display: none;
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #2ecc71;
-    color: white;
-    padding: 14px 24px;
-    border-radius: 12px;
-    font-size: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 99999;
-    transition: opacity 0.4s ease;
-  ">Заявку надіслано успішно!</div>
-
-  <div id="mapModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:1000;">
-    <div id="map" style="height: 90%; width: 100%;"></div>
-    <button onclick="closeMap()" style="width: 100%; padding: 16px; background-color: #007AFF; color: white; border: none;">✅ Обрати точку</button>
-  </div>
-
-  <script>
-    // Оптимізований JS
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-
-    const form = document.getElementById("moveForm");
-    form.addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const ids = ["city_from", "from", "city_to", "to", "from_lat", "from_lng", "to_lat", "to_lng", "date", "time", "cargo", "weight", "length", "width", "height", "vehicle_type", "loaders", "elevator", "phone", "comment"];
-      const data = Object.fromEntries(ids.map(id => [id, document.getElementById(id)?.value || ""]));
-      data.telegram_id = tg.initDataUnsafe?.user?.id || null;
-      data.username = tg.initDataUnsafe?.user?.username || null;
-      data.full_name = `${tg.initDataUnsafe?.user?.first_name || ''} ${tg.initDataUnsafe?.user?.last_name || ''}`.trim();
-
-      try {
-        await fetch("https://firstbs.app.n8n.cloud/webhook/ad4ad8cd-4831-46de-8810-41a08324a8d3", {
-          method: "POST",
-          headers: { "Accept": "application/json", "Content-Type": "application/json" },
-          body: JSON.stringify(data)
-        });
-        showToast("Заявку надіслано успішно!");
-        tg.close();
-      } catch (err) {
-        console.error("Fetch error:", err);
-        alert("Помилка надсилання! Спробуйте ще раз.");
-      }
-    });
-
-    let map, selectedMarker, activeField;
-    function openMap(fieldId) {
-      activeField = fieldId;
-      document.getElementById('mapModal').style.display = 'block';
-      setTimeout(() => {
-        if (!map) {
-          map = L.map('map').setView([50.4501, 30.5234], 13);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-          }).addTo(map);
-        }
-        map.off('click');
-        map.on('click', function (e) {
-          const { lat, lng } = e.latlng;
-          if (selectedMarker) map.removeLayer(selectedMarker);
-          selectedMarker = L.marker([lat, lng]).addTo(map);
-          document.getElementById(`${activeField}_lat`).value = lat;
-          document.getElementById(`${activeField}_lng`).value = lng;
-          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
-            .then(res => res.json())
-            .then(data => {
-              document.getElementById(activeField).value = data.display_name || `${lat}, ${lng}`;
-            });
-        });
-        map.invalidateSize();
-      }, 200);
-    }
-    function closeMap() {
-      document.getElementById('mapModal').style.display = 'none';
-    }
-
-    const debounce = (fn, delay = 400) => {
-      let timeout;
-      return (...args) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => fn(...args), delay);
-      };
-    };
-
-    async function fetchCities(query) {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&accept-language=uk&countrycodes=ua&addressdetails=1&limit=10`);
-      const data = await res.json();
-      return data.filter(item => ['city','town','village'].includes(item.type)).map(item => {
-        const a = item.address;
-        const city = a.city || a.town || a.village || '';
-        const parts = [city];
-        if (a.county && a.county !== city) parts.push(a.county);
-        if (a.state && a.state !== city && a.state !== a.county) parts.push(a.state);
-        return {
-          name: parts.join(', '),
-          lat: item.lat,
-          lon: item.lon
-        };
-      });
-    }
-
-    const cityInputs = [
-  { inputId: 'city_from', latId: 'from_lat', lngId: 'from_lng' },
-  { inputId: 'city_to', latId: 'to_lat', lngId: 'to_lng' }
-];
-
-cityInputs.forEach(({ inputId, latId, lngId }) => {
-  const input = document.getElementById(inputId);
-  const suggestionsBox = document.getElementById(`suggestions_${inputId}`);
-  let suggestions = [];
-  let timer;
-
-  input.addEventListener('input', () => {
-    const value = input.value.trim();
-    clearTimeout(timer);
-
-    if (value.length < 3) {
-      suggestionsBox.style.display = 'none';
-      input.classList.remove('valid', 'invalid');
-      return;
-    }
-
-    timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&accept-language=uk&countrycodes=ua&limit=5&q=${encodeURIComponent(value)}`);
-        const data = await res.json();
-
-        suggestions = data.map(place => {
-          const { address } = place;
-          const city = address.city || address.town || address.village || place.display_name.split(',')[0];
-          const region = address.state || address.region || '';
-          const country = address.country || '';
-          return {
-            name: `${city}${region ? ', ' + region : ''}${country && country !== region ? ', ' + country : ''}`,
-            lat: place.lat,
-            lon: place.lon
-          };
-        });
-
-        suggestionsBox.innerHTML = '';
-        suggestions.forEach(({ name }) => {
-          const div = document.createElement('div');
-          div.className = 'suggestion-item';
-          div.textContent = name;
-          div.addEventListener('mousedown', () => {
-            input.value = name;
-            const matched = suggestions.find(s => s.name === name);
-            if (matched) {
-              document.getElementById(latId).value = matched.lat;
-              document.getElementById(lngId).value = matched.lon;
-              input.classList.add('valid');
-              input.classList.remove('invalid');
-            }
-            suggestionsBox.style.display = 'none';
-          });
-          suggestionsBox.appendChild(div);
-        });
-
-        const rect = input.getBoundingClientRect();
-        const scrollY = window.scrollY || document.documentElement.scrollTop;
-        suggestionsBox.style.position = 'absolute';
-        suggestionsBox.style.top = `${rect.bottom + scrollY}px`;
-        suggestionsBox.style.left = `${rect.left}px`;
-        suggestionsBox.style.width = `${rect.width}px`;
-        suggestionsBox.style.display = 'block';
-        document.body.appendChild(suggestionsBox);
-
-      } catch (e) {
-        console.error("Autocomplete fetch error:", e);
-        suggestionsBox.style.display = 'none';
-      }
-    }, 500);
-  });
-
-  input.addEventListener('blur', () => setTimeout(() => suggestionsBox.style.display = 'none', 200));
-});
-  </script>
-</body>
-</html>
+<script>
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.style.display = 'block';
+  toast.style.opacity = '1';
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 400);
+  }, 3000);
+}
+</script>
