@@ -230,6 +230,21 @@
     });
 
     let map, selectedMarker, activeField;
+async function fetchCoordsFromAddress(address) {
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&accept-language=uk&q=${encodeURIComponent(address)}&limit=1`);
+    const data = await res.json();
+    if (data && data.length > 0) {
+      return {
+        lat: parseFloat(data[0].lat),
+        lng: parseFloat(data[0].lon)
+      };
+    }
+  } catch (err) {
+    console.error("Помилка при отриманні координат:", err);
+  }
+  return null;
+}
     function openMap(fieldId) {
       activeField = fieldId;
       document.getElementById('mapModal').style.display = 'block';
