@@ -269,9 +269,11 @@ function openMap(fieldId) {
         }
       }
     } else if (fieldId === 'to') {
+      const city = document.getElementById('city_to').value;
       const address = document.getElementById('to').value;
-      if (address.length > 2) {
-        const coords = await fetchCoordsFromAddress(address);
+      const fullAddress = `${address}, ${city}`;
+      if (fullAddress.length > 2) {
+        const coords = await fetchCoordsFromAddress(fullAddress);
         if (coords) {
           centerLat = coords.lat;
           centerLng = coords.lng;
